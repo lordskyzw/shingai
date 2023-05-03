@@ -1,4 +1,4 @@
-os
+import os
 from flask import Flask, render_template
 from twilio.twiml.messaging_response import MessagingResponse
 import openai
