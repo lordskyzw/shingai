@@ -7,7 +7,7 @@ from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain import PromptTemplate
 
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+openai_api_key = os.environ.get("OPENAI_API_KEY")
 
 
 def process_audio(audio_data):
