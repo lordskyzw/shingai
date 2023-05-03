@@ -58,7 +58,7 @@ def chat():
     if not message and not audio_file:
         response.message("Sorry, I did not receive a message or audio from you.")
     else:
-        if audio_file:
+        if audio_file and not message:
             audio_data = audio_file.read()
             reply = process_audio(audio_data)
         else:
