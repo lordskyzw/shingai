@@ -9,6 +9,7 @@ from langchain.templates import PromptTemplate
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
+
 def process_audio(audio_data):
     response = openai.Completion.create(
         engine="text-davinci-002",
@@ -18,6 +19,7 @@ def process_audio(audio_data):
     )
     return response.choices[0].text.strip()
 
+
 template = """You are a chatbot having a conversation with a human.
 
 {chat_history}
@@ -25,36 +27,32 @@ Human: {human_input}
 Chatbot:"""
 
 prompt = PromptTemplate(
-    input_variables=["chat_history", "human_input"], 
-    template=template
+    input_variables=["chat_history", "human_input"], template=template
 )
 memory = ConversationBufferMemory(memory_key="chat_history")
 
 llm_chain = LLMChain(
-  llm=OpenAI(model_name="text-davinci-003",
-               openai_api_key=openai_api_key,
-               temperature=0.7
-               ), 
-    prompt=prompt, 
-    verbose=True, 
+    llm=OpenAI(
+        model_name="text-davinci-003", openai_api_key=openai_api_key, temperature=0.7
+    ),
+    prompt=prompt,
+    verbose=True,
     memory=memory,
 )
 
 
-
-
-
-
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-  return render_template('index.html')
 
-@app.route('/chat', methods=["POST"])
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+@app.route("/chat", methods=["POST"])
 def chat():
-  response = MessagingResponse()
-    recipient = request.form.get('From')
+    response = MessagingResponse()
+    recipient = request.form.get("From")
     message = request.form.get("Body")
     audio_file = request.files.get("MediaUrl0")
     if not message and not audio_file:
@@ -67,7 +65,7 @@ def chat():
             reply = llm_chain.predict(human_input=message)
         response.message(reply)
     return str(response)
-  
 
-if __name__ == '__main__':
-  app.run(port=5002)
+
+if __name__ == "__main__":
+    app.run(port=5002)
