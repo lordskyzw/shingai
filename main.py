@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, request
 from twilio.twiml.messaging_response import MessagingResponse
+from twilio.twiml.voice_response import VoiceResponse
 import openai
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
@@ -12,7 +13,7 @@ openai_api_key = os.environ.get("OPENAI_API_KEY")
 
 def process_audio(audio_data):
     response = openai.Completion.create(
-        engine="text-davinci-002",
+        engine="dacinci-whisper-1",
         prompt="Whisper:\n" + audio_data.decode(),
         max_tokens=1024,
         temperature=0.5,
@@ -51,6 +52,7 @@ def index():
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    voice_response = VoiceResponse()
     response = MessagingResponse()
     recipient = request.form.get("From")
     message = request.form.get("Body")
@@ -61,6 +63,7 @@ def chat():
         if audio_file and not message:
             audio_data = audio_file.read()
             reply = process_audio(audio_data)
+            voice_response.message(reply)
         else:
             reply = llm_chain.predict(human_input=message)
         response.message(reply)
