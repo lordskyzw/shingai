@@ -1,4 +1,5 @@
 import os
+import requests
 from flask import Flask, render_template, request
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.twiml.voice_response import VoiceResponse
@@ -7,13 +8,14 @@ from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain import PromptTemplate
+import tempfile
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 
 
 def process_audio(audio_data):
     response = openai.Completion.create(
-        engine="dacinci-whisper-1",
+        engine="davinci-whisper-1",
         prompt="Whisper:\n" + audio_data.decode(),
         max_tokens=1024,
         temperature=0.5,
@@ -61,9 +63,14 @@ def chat():
         response.message("Sorry, I did not receive a message or audio from you.")
     else:
         if audio_file and not message:
-            audio_data = audio_file.read()
-            reply = process_audio(audio_data)
-            voice_response.message(reply)
+            # Download the voice note data and save it to a temporary file
+            with tempfile.TemporaryFile() as f:
+                response = requests.get(audio_file)
+                f.write(response.content)
+                f.seek(0)
+                audio_data = f.read()
+                reply = process_audio(audio_data)
+                voice_response.message(reply)
         else:
             reply = llm_chain.predict(human_input=message)
         response.message(reply)
