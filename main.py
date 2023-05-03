@@ -5,7 +5,7 @@ import openai
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
-from langchain.templates import PromptTemplate
+from langchain import PromptTemplate
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
