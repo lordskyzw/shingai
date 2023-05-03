@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from twilio.twiml.messaging_response import MessagingResponse
 import openai
 from langchain.llms import OpenAI
