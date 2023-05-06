@@ -23,7 +23,7 @@ def process_audio(audio_data):
     return response.choices[0].text.strip()
 
 
-template = """You are a chatbot having a conversation with a human.
+template = """You are chatgpt having a conversation with a human.
 
 {chat_history}
 Human: {human_input}
@@ -36,7 +36,7 @@ memory = ConversationBufferMemory(memory_key="chat_history")
 
 llm_chain = LLMChain(
     llm=OpenAI(
-        model_name="text-davinci-003", openai_api_key=openai_api_key, temperature=0.7
+        model_name="text-davinci-003", openai_api_key=openai_api_key, temperature=0
     ),
     prompt=prompt,
     verbose=True,
