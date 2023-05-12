@@ -1,34 +1,20 @@
 import os
-import requests
-from flask import Flask, render_template, request
+import psycopg2
+from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
-from twilio.twiml.voice_response import VoiceResponse
-import openai
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain import PromptTemplate
-import tempfile
+from langchain.memory.chat_message_histories import PostgresChatMessageHistory
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
-
-
-def process_audio(audio_data):
-    response = openai.Completion.create(
-        engine="davinci-whisper-1",
-        prompt="Whisper:\n" + audio_data.decode(),
-        max_tokens=1024,
-        temperature=0.5,
-    )
-    return response.choices[0].text.strip()
-
 
 template = """You are chatgpt having a conversation with a human.
 
 {chat_history}
 Human: {human_input}
 Chatbot:"""
-
 prompt = PromptTemplate(
     input_variables=["chat_history", "human_input"], template=template
 )
@@ -43,39 +29,48 @@ llm_chain = LLMChain(
     memory=memory,
 )
 
+# Initialize Postgres connection
+db_url = os.environ.get("DATABASE_URL")
+conn = psycopg2.connect(db_url, sslmode="require") if db_url else None
+
+# Define table schema
+table_schema = """
+CREATE TABLE IF NOT EXISTS projectmemory (
+    id SERIAL PRIMARY KEY,
+    number TEXT NOT NULL,
+    history TEXT NOT NULL,
+    data BYTEA NOT NULL
+);
+"""
+# Create table if it does not exist
+if conn:
+    with conn.cursor() as cur:
+        cur.execute(table_schema)
+        conn.commit()
 
 app = Flask(__name__)
 
-
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-
 @app.route("/chat", methods=["POST"])
 def chat():
-    voice_response = VoiceResponse()
     response = MessagingResponse()
     recipient = request.form.get("From")
     message = request.form.get("Body")
-    audio_file = request.files.get("MediaUrl0")
-    if not message and not audio_file:
-        response.message("Sorry, I did not receive a message or audio from you.")
-    else:
-        if audio_file and not message:
-            # Download the voice note data and save it to a temporary file
-            with tempfile.TemporaryFile() as f:
-                response = requests.get(audio_file)
-                f.write(response.content)
-                f.seek(0)
-                audio_data = f.read()
-                reply = process_audio(audio_data)
-                voice_response.message(reply)
-        else:
-            reply = llm_chain.predict(human_input=message)
-        response.message(reply)
-    return str(response)
 
+    # Load up the specific user chat history
+    history = PostgresChatMessageHistory(
+        connection_string="postgresql://postgres:mypassword@localhost/chat_history",
+        table_name="projectmemory",
+        session_id=recipient,
+    )
+    
+    try:
+        dic = {"human_input": message, "chat_history": history.messages}
+    except Exception as e:
+        response.message(str(e))
+
+    reply = llm_chain.run(dic)
+    response.message(reply)
+    return "200"
 
 if __name__ == "__main__":
-    app.run(port=5002)
+    app.run(debug=True, port=os.getenv("PORT", default=5000))

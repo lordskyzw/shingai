@@ -3,3 +3,4 @@ gunicorn>=20.1.0
 openai
 langchain
 twilio
+psycopg2
