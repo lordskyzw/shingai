@@ -47,11 +47,11 @@ def chat():
         response.message(str(e))
     try:
         dic = {"human_input": message, "chat_history": history.messages}
+        reply = llm_chain.run(dic)
+        response.message(reply)
     except Exception as e:
         response.message(str(e))
 
-    reply = llm_chain.run(dic)
-    response.message(reply)
     return "200"
 
 
