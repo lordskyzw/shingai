@@ -18,7 +18,6 @@ prompt = PromptTemplate(
     input_variables=["chat_history", "human_input"], template=template
 )
 memory = ConversationBufferMemory(memory_key="chat_history")
-
 llm_chain = LLMChain(
     llm=OpenAI(
         model_name="text-davinci-003", openai_api_key=openai_api_key, temperature=0
@@ -52,7 +51,7 @@ def chat():
     except Exception as e:
         response.message(str(e))
 
-    return "200"
+    return reply
 
 
 if __name__ == "__main__":
