@@ -1,12 +1,11 @@
 import os
-import psycopg2
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain import PromptTemplate
-from langchain.memory.chat_message_histories import PostgresChatMessageHistory
+from langchain.memory.chat_message_histories import RedisChatMessageHistory
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 
@@ -29,26 +28,8 @@ llm_chain = LLMChain(
     memory=memory,
 )
 
-# Initialize Postgres connection
-db_url = os.environ.get("DATABASE_URL")
-conn = psycopg2.connect(db_url, sslmode="require") if db_url else None
-
-# Define table schema
-table_schema = """
-CREATE TABLE IF NOT EXISTS projectmemory (
-    id SERIAL PRIMARY KEY,
-    number TEXT NOT NULL,
-    history TEXT NOT NULL,
-    data BYTEA NOT NULL
-);
-"""
-# Create table if it does not exist
-if conn:
-    with conn.cursor() as cur:
-        cur.execute(table_schema)
-        conn.commit()
-
 app = Flask(__name__)
+
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -57,12 +38,13 @@ def chat():
     message = request.form.get("Body")
 
     # Load up the specific user chat history
-    history = PostgresChatMessageHistory(
-        connection_string="postgresql://postgres:mypassword@localhost/chat_history",
-        table_name="projectmemory",
-        session_id=recipient,
-    )
-    
+    try:
+        history = RedisChatMessageHistory(
+            session_id=recipient,
+            url="redis://default:STtIu6f9qhlcU97jfp9y@containers-us-west-110.railway.app:5859",
+        )
+    except Exception as e:
+        response.message(str(e))
     try:
         dic = {"human_input": message, "chat_history": history.messages}
     except Exception as e:
@@ -71,6 +53,7 @@ def chat():
     reply = llm_chain.run(dic)
     response.message(reply)
     return "200"
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=os.getenv("PORT", default=5000))
