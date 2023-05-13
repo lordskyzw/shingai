@@ -5,3 +5,4 @@ langchain
 twilio
 psycopg
 psycopg2-binary
+psycopg2
