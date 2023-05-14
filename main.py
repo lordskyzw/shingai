@@ -9,7 +9,7 @@ from langchain.memory.chat_message_histories import PostgresChatMessageHistory
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 
-template = """You are chatgpt having a conversation with a human.
+template = """You are having a conversation with a chatbot.
 
 {chat_history}
 Human: {human_input}
@@ -32,7 +32,6 @@ app = Flask(__name__)
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    response = MessagingResponse()
     recipient = request.form.get("From")
     message = request.form.get("Body")
 
@@ -44,12 +43,15 @@ def chat():
             table_name="projectmemory",
         )
     except Exception as e:
-        response.message(str(e))
+        return str(e)
 
     dic = {"human_input": message, "chat_history": history.messages}
     reply = llm_chain.run(dic)
+
+    # Send the reply back to the WhatsApp number
+    response = MessagingResponse()
     response.message(reply)
-    return str(reply)
+    return str(response)
 
 
 if __name__ == "__main__":
