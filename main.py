@@ -50,6 +50,10 @@ def chat():
     dic = {"human_input": message, "chat_history": history.messages}
     reply = llm_chain.run(dic)
 
+    # save the interaction to Postgres
+    history.add_user_message(message=message)
+    history.add_ai_message(reply)
+
     # Send the reply back to the WhatsApp number
     response = MessagingResponse()
     response.message(reply)
