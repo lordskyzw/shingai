@@ -33,6 +33,8 @@ app = Flask(__name__)
 @app.route("/chat", methods=["POST"])
 def chat():
     recipient = request.form.get("From")
+    # Strip special characters and formatting from the phone number
+    recipient = "".join(filter(str.isdigit, recipient))
     message = request.form.get("Body")
 
     # Load up the specific user chat history
