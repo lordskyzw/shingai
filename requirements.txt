@@ -4,5 +4,6 @@ openai
 langchain
 twilio
 psycopg
+psycopg-binary
 psycopg2-binary
 psycopg2

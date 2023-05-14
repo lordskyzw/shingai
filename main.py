@@ -5,7 +5,7 @@ from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain import PromptTemplate
-from langchain.memory.chat_message_histories import RedisChatMessageHistory
+from langchain.memory.chat_message_histories import PostgresChatMessageHistory
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 
@@ -38,9 +38,10 @@ def chat():
 
     # Load up the specific user chat history
     try:
-        history = RedisChatMessageHistory(
+        history = PostgresChatMessageHistory(
             session_id=recipient,
-            url="redis://default:STtIu6f9qhlcU97jfp9y@containers-us-west-110.railway.app:5859",
+            connection_string="postgresql://postgres:g9wW6vVVFjF5ZSEFytXL@containers-us-west-67.railway.app:7803/railway",
+            table_name="projectmemory",
         )
     except Exception as e:
         response.message(str(e))
