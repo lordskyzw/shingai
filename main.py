@@ -3,7 +3,6 @@ from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
-from langchain.memory import ConversationBufferMemory
 from langchain import PromptTemplate
 from langchain.memory import MongoDBChatMessageHistory
 
@@ -37,14 +36,12 @@ def chat():
     prompt = PromptTemplate(
         input_variables=["chat_history", "human_input"], template=template
     )
-    memory = ConversationBufferMemory(memory_key="chat_history")
     llm_chain = LLMChain(
         llm=OpenAI(
             model_name="text-davinci-003", openai_api_key=openai_api_key, temperature=0
         ),
         prompt=prompt,
         verbose=True,
-        memory=memory,
     )
     dic = {"human_input": message, "chat_history": str(history.messages)}
     reply = llm_chain.run(dic)
