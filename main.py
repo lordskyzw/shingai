@@ -5,7 +5,7 @@ from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain import PromptTemplate
-from langchain.memory.chat_message_histories import PostgresChatMessageHistory
+from langchain.memory import MongoDBChatMessageHistory
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 
@@ -39,10 +39,10 @@ def chat():
 
     # Load up the specific user chat history
     try:
-        history = PostgresChatMessageHistory(
+        history = MongoDBChatMessageHistory(
+            connection_string="mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055",
+            database_name="test",
             session_id=recipient,
-            connection_string="postgresql://postgres:g9wW6vVVFjF5ZSEFytXL@containers-us-west-67.railway.app:7803/railway",
-            table_name="projectmemory",
         )
     except Exception as e:
         return str(e)

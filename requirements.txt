@@ -3,7 +3,4 @@ gunicorn>=20.1.0
 openai
 langchain
 twilio
-psycopg
-psycopg-binary
-psycopg2-binary
-psycopg2
+pymongo
