@@ -9,23 +9,6 @@ from langchain.memory import MongoDBChatMessageHistory
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 
-template = """You are having a conversation with a chatbot.
-
-{chat_history}
-Human: {human_input}
-Chatbot:"""
-prompt = PromptTemplate(
-    input_variables=["chat_history", "human_input"], template=template
-)
-memory = ConversationBufferMemory(memory_key="chat_history")
-llm_chain = LLMChain(
-    llm=OpenAI(
-        model_name="text-davinci-003", openai_api_key=openai_api_key, temperature=0
-    ),
-    prompt=prompt,
-    verbose=True,
-    memory=memory,
-)
 
 app = Flask(__name__)
 
@@ -46,8 +29,25 @@ def chat():
         )
     except Exception as e:
         return str(e)
-
-    dic = {"human_input": message, "chat_history": history.messages}
+    template = (
+        """You are having a conversation with a chatbot. Using:""".join(
+            str(history.messages)
+        )
+        + """ as history, respond accordingly.
+    Human: {human_input}
+    Chatbot:"""
+    )
+    prompt = PromptTemplate(input_variables=["human_input"], template=template)
+    memory = ConversationBufferMemory(memory_key="chat_history")
+    llm_chain = LLMChain(
+        llm=OpenAI(
+            model_name="text-davinci-003", openai_api_key=openai_api_key, temperature=0
+        ),
+        prompt=prompt,
+        verbose=True,
+        memory=memory,
+    )
+    dic = {"human_input": message}
     reply = llm_chain.run(dic)
 
     # save the interaction to Postgres
