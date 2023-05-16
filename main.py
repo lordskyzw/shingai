@@ -29,15 +29,14 @@ def chat():
         )
     except Exception as e:
         return str(e)
-    template = (
-        """You are having a conversation with a chatbot. Using:""".join(
-            str(history.messages)
-        )
-        + """ as history, respond accordingly.
+    template = """You are having a conversation with a chatbot.
+
+    {chat_history}
     Human: {human_input}
     Chatbot:"""
+    prompt = PromptTemplate(
+        input_variables=["chat_history", "human_input"], template=template
     )
-    prompt = PromptTemplate(input_variables=["human_input"], template=template)
     memory = ConversationBufferMemory(memory_key="chat_history")
     llm_chain = LLMChain(
         llm=OpenAI(
@@ -47,7 +46,7 @@ def chat():
         verbose=True,
         memory=memory,
     )
-    dic = {"human_input": message}
+    dic = {"human_input": message, "chat_history": str(history.messages)}
     reply = llm_chain.run(dic)
 
     # save the interaction to Postgres
