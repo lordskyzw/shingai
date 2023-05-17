@@ -49,7 +49,7 @@ def chat():
     )
     dic = {
         "human_input": message,
-        "chat_history": str(history.messages[range(-1, -4[1])]),
+        "chat_history": str(history.messages),
     }
     reply = llm_chain.run(dic)
 
