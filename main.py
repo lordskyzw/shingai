@@ -26,11 +26,13 @@ def chat():
             database_name="test",
             session_id=recipient,
         )
+
     except Exception as e:
         return str(e)
-    template = """You are having a conversation with a chatbot.
-
+    template = """
     {chat_history}
+    
+    using the above as context (chat history between human and chatbot), respond as a witty and human-like Chatbot to following interaction->
     Human: {human_input}
     Chatbot:"""
     prompt = PromptTemplate(
@@ -38,12 +40,17 @@ def chat():
     )
     llm_chain = LLMChain(
         llm=OpenAI(
-            model_name="text-davinci-003", openai_api_key=openai_api_key, temperature=0
+            model_name="text-davinci-003",
+            openai_api_key=openai_api_key,
+            temperature=0.7,
         ),
         prompt=prompt,
         verbose=True,
     )
-    dic = {"human_input": message, "chat_history": str(history.messages)}
+    dic = {
+        "human_input": message,
+        "chat_history": str(history.messages[range(-1, -4[1])]),
+    }
     reply = llm_chain.run(dic)
 
     # save the interaction to Postgres
