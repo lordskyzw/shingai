@@ -35,20 +35,22 @@ def chat():
     recipient = request.form.get("From")
     # Strip special characters and formatting from the phone number
     recipient = "".join(filter(str.isdigit, recipient))
-    
+
     # Save the recipient's phone number in the mongo user database
     recipient_obj = {"id": recipient, "phone_number": recipient}
     collection.insert_one(recipient_obj)
 
-    # Get the message, make vector embeddings and add it to the vector database
+    # Get the message, make vector embeddings
     message = request.form.get("Body")
     vectorstore = Pinecone(index, embeddings.embed_query, "text", namespace=recipient)
-    vectorstore.add_texts(history.messages, namespace=recipient)
 
     # Load up the specific user chat history from  the mongodb
     history = dbconnection(recipient)
-    
-    #begin Prompt Engineering
+
+    # add embeddings to the vector database
+    vectorstore.add_texts(history.messages, namespace=recipient)
+
+    # begin Prompt Engineering
     template = """
     {chat_history}
     
@@ -76,8 +78,8 @@ def chat():
         "chat_history": str(history.messages[-4:]),
         "human_input": message,
     }
-    
-    #get response from the llm
+
+    # get response from the llm
     reply = llm_chain.run(dic)
 
     # save the interaction to Postgres and Vectorstore
