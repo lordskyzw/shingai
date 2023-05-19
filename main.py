@@ -60,7 +60,7 @@ def chat():
     Human: {human_input}
     AI:"""
     prompt = PromptTemplate(
-        input_variables=["chat_history", "context" "human_input"], template=template
+        input_variables=["chat_history", "context", "human_input"], template=template
     )
     llm_chain = LLMChain(
         llm=OpenAI(
