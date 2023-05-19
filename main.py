@@ -2,7 +2,7 @@ import os
 from tools import *
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
-from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain import PromptTemplate
 from langchain.vectorstores import Pinecone
@@ -63,7 +63,7 @@ def chat():
         input_variables=["chat_history", "context", "human_input"], template=template
     )
     llm_chain = LLMChain(
-        llm=OpenAI(
+        llm=ChatOpenAI(
             model_name="gpt-3.5-turbo",
             openai_api_key=openai_api_key,
             temperature=0.7,
