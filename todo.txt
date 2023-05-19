@@ -1,0 +1,1 @@
+permanently name the chatbot to Wintermake chats personalized (the current idea is to use a vectordatabase but for each user?)
