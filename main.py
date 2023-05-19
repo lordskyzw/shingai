@@ -56,9 +56,9 @@ def chat():
     
     {context}
     
-    using the above as chat history and context, if there is none, proceed naturally, respond as a witty and sentient A.I to the following interaction->
+    You are an AI having a conversation with a human. Using the above as chat history and context, if there is none, proceed naturally. Do not ask for further instructions. Respond as a sentient A.I to the following interaction:
     Human: {human_input}
-    AI:"""
+    AI: """
     prompt = PromptTemplate(
         input_variables=["chat_history", "context", "human_input"], template=template
     )
