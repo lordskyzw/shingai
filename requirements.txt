@@ -5,4 +5,4 @@ langchain
 twilio
 pymongo
 openai
-pinecone
+pinecone-client
