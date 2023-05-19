@@ -22,7 +22,9 @@ for recipient in recipients:
 # Send a message to each recipient
 for phone_number in phone_numbers:
     message = twilio_client.messages.create(
-        from_="whatsapp:+14155238886", body="testing", to="whatsapp:+263779281345"
+        from_="whatsapp:+14155238886",
+        body="Be back in a giffy",
+        to=f"whatsapp:+{phone_number}",
     )
     print(message.sid)
     print("Message sent to:", phone_number)

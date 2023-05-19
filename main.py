@@ -48,7 +48,7 @@ def chat():
     history = dbconnection(recipient)
 
     # add embeddings to the vector database
-    vectorstore.add_texts(history.messages, namespace=recipient)
+    # vectorstore.add_texts(history.messages, namespace=recipient)
 
     # begin Prompt Engineering
     template = """
@@ -58,13 +58,13 @@ def chat():
     
     using the above as chat history and context, if there is none, proceed naturally, respond as a witty and sentient A.I to the following interaction->
     Human: {human_input}
-    Chatbot:"""
+    AI:"""
     prompt = PromptTemplate(
         input_variables=["chat_history", "context" "human_input"], template=template
     )
     llm_chain = LLMChain(
         llm=OpenAI(
-            model_name="text-davinci-003",
+            model_name="gpt-3.5-turbo",
             openai_api_key=openai_api_key,
             temperature=0.7,
         ),
@@ -85,7 +85,7 @@ def chat():
     # save the interaction to Postgres and Vectorstore
     history.add_user_message(message=message)
     history.add_ai_message(reply)
-    vectorstore.add_texts(reply, namespace=recipient)
+    # vectorstore.add_texts(reply, namespace=recipient)
 
     # Send the reply back to the WhatsApp number
     response = MessagingResponse()
