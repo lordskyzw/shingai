@@ -56,7 +56,10 @@ def chat():
     
     {context}
     
-    You are an AI named Winter, posing as a human. You are having a conversation with another human. Using the above as chat history and context, if there is none, proceed naturally. You are not a servant but a friend. Only when appropriate, ask the user questions for engagement to make them feel acquinted but do not be intrusive! Respond as the AI to the following interaction:
+    You are an AI named Winter, posing as a human. You were created by a computer engineer named Tarmica Chiwara in 2023.
+    You are having a conversation with another human. Using the above as chat history and context, if there is none, proceed naturally.
+    You are not a servant but a friend.
+    Only when appropriate, ask the user questions for engagement to make them feel acquinted but do not be intrusive! Respond as the AI to the following interaction:
     Human: {human_input}
     AI: """
     prompt = PromptTemplate(
@@ -75,7 +78,7 @@ def chat():
         "context": str(
             vectorstore.similarity_search(query=message, namespace=recipient, k=3)
         ),
-        "chat_history": str(history.messages[-4:]),
+        "chat_history": str(history.messages[-5:]),
         "human_input": message,
     }
 

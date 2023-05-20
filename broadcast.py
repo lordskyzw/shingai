@@ -1,6 +1,8 @@
 from pymongo import MongoClient
 from twilio.rest import Client
+from tools import *
 import os
+from time import sleep
 
 account_sid = "AC81c0755065e9eba6542ca94a9571ca8e"
 auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
@@ -26,5 +28,8 @@ for phone_number in phone_numbers:
         body="Be back in a giffy",
         to=f"whatsapp:+{phone_number}",
     )
+    history = dbconnection(phone_number)
+    history.add_ai_message(message=message)
     print(message.sid)
     print("Message sent to:", phone_number)
+    sleep(2)
