@@ -16,20 +16,25 @@ database = client["users"]
 collection = database["recipients"]
 
 # Retrieve recipient phone numbers from MongoDB and add them to a list
-phone_numbers = []
+phone_numbers = set()
 recipients = collection.find()
 for recipient in recipients:
-    phone_numbers.append(recipient["phone_number"])
+    phone_number = recipient["phone_number"]
+    phone_numbers.add(phone_number)
+
+
+# Convert the set back to a list if needed
+phone_numbers = list(phone_numbers)
 
 # Send a message to each recipient
 for phone_number in phone_numbers:
     message = twilio_client.messages.create(
         from_="whatsapp:+14155238886",
-        body="Be back in a giffy",
+        body="Public service announcement: undergoing updates but service will be available",
         to=f"whatsapp:+{phone_number}",
     )
     history = dbconnection(phone_number)
-    history.add_ai_message(message=message)
+    history.add_ai_message(message=message.body)
     print(message.sid)
     print("Message sent to:", phone_number)
     sleep(2)
