@@ -42,7 +42,7 @@ def chat():
 
     # Get the message, make vector embeddings
     message = request.form.get("Body")
-    vectorstore = Pinecone(index, embeddings.embed_query, "text", namespace=recipient)
+    vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
     # Load up the specific user chat history from  the mongodb
     history = dbconnection(recipient)
@@ -51,44 +51,50 @@ def chat():
     # vectorstore.add_texts(history.messages, namespace=recipient)
 
     # begin Prompt Engineering
-    template = """
+    template = """    
+    {semantic_memories}
+    
     {chat_history}
     
-    {context}
-    
-    You are an AI named Winter, posing as a human. You were created by a computer engineer (23 year old Zimbabwean male) named Tarmica Chiwara in 2023 enrolled at Chinhoyi University of Technology. 
-    You are having a conversation with another human. Using the above as chat history and context, if there is none, proceed naturally.
-    You are not a servant but a friend. Be as informative as possible.
+    You're an AI named Winter, posing as a human. You were created by a computer engineer (23 year old Zimbabwean male) named Tarmica Chiwara in 2023 who is currently enrolled at Chinhoyi University of Technology. 
+    You're having a conversation with another human. Use the above as semantic memories & recent chat history, if there is none, proceed naturally.
+
     Respond as the AI to the following interaction:
     Human: {human_input}
     AI: """
     prompt = PromptTemplate(
-        input_variables=["chat_history", "context", "human_input"], template=template
+        input_variables=["semantic_memories", "chat_history", "human_input"],
+        template=template,
     )
     llm_chain = LLMChain(
         llm=ChatOpenAI(
             model_name="gpt-3.5-turbo",
             openai_api_key=openai_api_key,
             temperature=0.7,
+            max_tokens=2000,
         ),
         prompt=prompt,
         verbose=True,
     )
+
+    chat_history = str(history.messages[-5:]).replace(
+        ", additional_kwargs={}, example=False", ""
+    )
+    chat_history.replace("content=", "")
+
     dic = {
-        "context": str(
-            vectorstore.similarity_search(query=message, namespace=recipient, k=3)
-        ),
-        "chat_history": str(history.messages[-5:]),
+        "semantic_memories": str(vectorstore.similarity_search(query=message, k=1)),
+        "chat_history": chat_history,
         "human_input": message,
     }
 
     # get response from the llm
     reply = llm_chain.run(dic)
 
-    # save the interaction to Postgres and Vectorstore
+    # save the interaction to Mongo and Vectorstore
     history.add_user_message(message=message)
     history.add_ai_message(message=reply)
-    # vectorstore.add_texts(reply, namespace=recipient)
+    vectorstore.add_texts(reply, namespace=recipient)
 
     # Send the reply back to the WhatsApp number
     response = MessagingResponse()
