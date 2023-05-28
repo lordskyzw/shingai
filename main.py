@@ -94,7 +94,7 @@ def chat():
     # save the interaction to Mongo and Vectorstore
     history.add_user_message(message=message)
     history.add_ai_message(message=reply)
-    vectorstore.add_texts(reply, namespace=recipient)
+    # vectorstore.add_texts(reply, namespace=recipient)
 
     # Send the reply back to the WhatsApp number
     response = MessagingResponse()
