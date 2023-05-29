@@ -2,17 +2,17 @@ import os
 from tools import *
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
-# from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain import PromptTemplate
 from langchain.vectorstores import Pinecone
 from langchain.embeddings import OpenAIEmbeddings
 import pinecone
-from langchain.llms import OpenAI
+#from langchain.llms import OpenAI
 from pymongo import MongoClient
 
-llm = OpenAI(
-    model_name="text-davinci-003",
+llm = ChatOpenAI(
+    model_name="gpt-3.5-turbo",
     temperature=0.7,
     openai_api_key=os.environ.get("OPENAI_API_KEY"),
 )
@@ -65,9 +65,9 @@ def chat():
     You were created by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara in 2023 who is currently enrolled at Chinhoyi University of Technology. 
     You're having a conversation with a human. Use information below to respond naturally. If you don't know the answer, please admit
 
-    <begining of semantic memories sparked by recent user input>{semantic_memories}<begining of semantic memories sparked by recent user input>
+    <beginning of semantic memories sparked by user input>{semantic_memories}<ending of semantic memories sparked by user input>
     
-    <beginning of recent 5 texts>{chat_history}<end of resent 5 texts>
+    <beginning of recent 5 texts>{chat_history}<ending of resent 5 texts>
 
     Respond as the AI to the following interaction:
     Human: {human_input}

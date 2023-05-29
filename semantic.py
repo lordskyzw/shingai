@@ -47,9 +47,9 @@ for phone_number in phone_numbers:
         ", additional_kwargs={}, example=False", ""
     )
     entire_history.replace("content=", "")
+
     char_text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000, chunk_overlap=100
     )
-
     doc_texts = char_text_splitter.split_text(entire_history)
     vectorstore.add_texts(texts=doc_texts, namespace=phone_number)
