@@ -82,7 +82,7 @@ def chat():
     chat_history.replace("content=", "")
 
     dic = {
-        "semantic_memories": str(vectorstore.similarity_search(query=message, k=1)),
+        "semantic_memories": str(vectorstore.similarity_search(query=message, k=1, namespace=recipient)),
         "chat_history": chat_history,
         "human_input": message,
     }
