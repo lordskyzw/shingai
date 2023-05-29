@@ -5,7 +5,7 @@ import os
 from time import sleep
 
 account_sid = "AC527f030f1e1a200f6c1edcdb9a111852"
-auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+auth_token = "698a2959c91cbac25047a61d367249c0"
 twilio_client = Client(account_sid, auth_token)
 
 # MongoDB configuration
@@ -30,7 +30,7 @@ phone_numbers = list(phone_numbers)
 for phone_number in phone_numbers:
     message = twilio_client.messages.create(
         from_="whatsapp:+14155238886",
-        body="Public service announcement: undergoing updates but service will be available",
+        body="Public service announcement: Updates should be complete now. They are not thoroughly tested so please contact Tarmica if you face any challenges. Thank you.",
         to=f"whatsapp:+{phone_number}",
     )
     history = dbconnection(phone_number)
