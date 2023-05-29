@@ -8,7 +8,14 @@ from langchain import PromptTemplate
 from langchain.vectorstores import Pinecone
 from langchain.embeddings import OpenAIEmbeddings
 import pinecone
+from langchain.llms import OpenAI
 from pymongo import MongoClient
+
+llm = OpenAI(
+    model_name="text-davinci-003",
+    temperature=0.7,
+    openai_api_key=os.environ.get("OPENAI_API_KEY"),
+)
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 pinecone.init(
@@ -67,11 +74,7 @@ def chat():
         template=template,
     )
     llm_chain = LLMChain(
-        llm=ChatOpenAI(
-            model_name="text-davinci-003",
-            openai_api_key=openai_api_key,
-            temperature=0.7,
-        ),
+        llm=llm,
         prompt=prompt,
         verbose=True,
     )
