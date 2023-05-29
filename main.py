@@ -2,7 +2,8 @@ import os
 from tools import *
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
-from langchain.chat_models import ChatOpenAI
+
+# from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain import PromptTemplate
 from langchain.vectorstores import Pinecone
