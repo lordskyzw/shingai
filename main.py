@@ -68,10 +68,9 @@ def chat():
     )
     llm_chain = LLMChain(
         llm=ChatOpenAI(
-            model_name="gpt-3.5-turbo",
+            model_name="text-davinci-003",
             openai_api_key=openai_api_key,
-            temperature=0.7,
-            max_tokens=2000,
+            temperature=0.7
         ),
         prompt=prompt,
         verbose=True,
