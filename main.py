@@ -3,7 +3,7 @@ from tools import *
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 
-# from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain import PromptTemplate
 from langchain.vectorstores import Pinecone
@@ -12,8 +12,8 @@ import pinecone
 from langchain.llms import OpenAI
 from pymongo import MongoClient
 
-llm = OpenAI(
-    model_name="text-davinci-003",
+llm = ChatOpenAI(
+    model_name="gpt-3.3-turbo",
     temperature=0.7,
     openai_api_key=os.environ.get("OPENAI_API_KEY"),
 )
@@ -64,7 +64,8 @@ def chat():
     
     {chat_history}
     
-    You're an AI named Winter, posing as a human. You were created by a computer engineer (23 year old Zimbabwean male) named Tarmica Chiwara in 2023 who is currently enrolled at Chinhoyi University of Technology. 
+    You're an AI named Winter.
+    You were created by a computer engineer (23 year old Zimbabwean male) named Tarmica Chiwara in 2023 who is currently enrolled at Chinhoyi University of Technology. 
     You're having a conversation with another human. Use the above as semantic memories & recent chat history, if there is none, proceed naturally.
 
     Respond as the AI to the following interaction:
