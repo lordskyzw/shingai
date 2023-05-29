@@ -68,9 +68,7 @@ def chat():
     )
     llm_chain = LLMChain(
         llm=ChatOpenAI(
-            model_name="text-davinci-003",
-            openai_api_key=openai_api_key,
-            temperature=0.7,
+            model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, temperature=0.7
         ),
         prompt=prompt,
         verbose=True,
@@ -84,7 +82,7 @@ def chat():
     dic = {
         "semantic_memories": str(
             vectorstore.similarity_search(query=message, k=1, namespace=recipient)
-        ),
+        ).replace(", metadata={}", ""),
         "chat_history": chat_history,
         "human_input": message,
     }
