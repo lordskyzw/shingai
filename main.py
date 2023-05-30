@@ -8,7 +8,8 @@ from langchain import PromptTemplate
 from langchain.vectorstores import Pinecone
 from langchain.embeddings import OpenAIEmbeddings
 import pinecone
-#from langchain.llms import OpenAI
+
+# from langchain.llms import OpenAI
 from pymongo import MongoClient
 
 llm = ChatOpenAI(
@@ -49,7 +50,6 @@ def chat():
 
     # Get the message
     message = request.form.get("Body")
-    
 
     # Load up the specific user chat history from  the mongodb
     history = dbconnection(recipient)
@@ -86,11 +86,6 @@ def chat():
         ", additional_kwargs={}, example=False", ""
     )
     chat_history.replace("content=", "")
-
-
-
-
-
 
     # get response from the llm
     dic = {

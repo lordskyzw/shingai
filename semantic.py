@@ -35,7 +35,7 @@ index = pinecone.Index(index_name="thematrix")
 vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
 
-# Send a message to each recipient
+# upsert everyones vector embeddings
 for phone_number in phone_numbers:
     history = MongoDBChatMessageHistory(
         connection_string="mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055",

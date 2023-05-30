@@ -2,7 +2,10 @@ from langchain.memory import MongoDBChatMessageHistory
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
 from time import sleep
+from langchain.llms import OpenAI
+from langchain.prompts import PromptTemplate
 import pinecone
+import os
 
 
 def dbconnection(recipient):
@@ -68,3 +71,17 @@ def get_semantic_memories(message, recipient):
         return str(semantic_results)
     except Exception:
         return None
+
+
+def summarize_memories(semantic_memories):
+    llm = OpenAI(
+        openai_api_key=os.environ.get("OPENAI_API_KEY"),
+        model="gpt-3.5-turbo",
+        temperature=0,
+    )
+    prompt = PromptTemplate(
+        input_variables=[semantic_memories],
+        template="""summarize the following semantic memory documents to a degree enough for an LLM to understand:
+                            
+                            {semantic_memories}""",
+    )
