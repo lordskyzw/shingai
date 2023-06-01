@@ -43,24 +43,15 @@ def chat():
     recipient = request.form.get("From")
     # Strip special characters and formatting from the phone number
     recipient = "".join(filter(str.isdigit, recipient))
-
     # Save the recipient's phone number in the mongo user database
     recipient_obj = {"id": recipient, "phone_number": recipient}
     collection.insert_one(recipient_obj)
 
-    # Get the message
     message = request.form.get("Body")
-
-    # Load up the specific user chat history from  the mongodb
     history = dbconnection(recipient)
 
-    # add embeddings to the vector database
-    # vectorstore.add_texts(history.messages, namespace=recipient)
-
     # begin Prompt Engineering
-    template = """    
-    
-    
+    template = """
     You're a "whatsapp accessed" AI named Winter.
     You were created by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara in 2023 who is currently enrolled at Chinhoyi University of Technology. 
     You're having a conversation with a human. Use information below to respond naturally. If you don't know the answer, please admit
