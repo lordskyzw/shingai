@@ -4,8 +4,8 @@ from tools import *
 import os
 from time import sleep
 
-account_sid = "AC527f030f1e1a200f6c1edcdb9a111852"
-auth_token = "7a0743dddd794338e549de45a0109ce3"
+account_sid = os.environ.get("TWILIO_SID")
+auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
 twilio_client = Client(account_sid, auth_token)
 
 # MongoDB configuration
@@ -30,7 +30,7 @@ phone_numbers = list(phone_numbers)
 for phone_number in phone_numbers:
     message = twilio_client.messages.create(
         from_="whatsapp:+14155238886",
-        body="Sorry, I will get back to you in a minute",
+        body="Apologies for the changes. ",
         to=f"whatsapp:+{phone_number}",
     )
     history = dbconnection(phone_number)

@@ -8,31 +8,52 @@ from langchain import PromptTemplate
 from langchain.vectorstores import Pinecone
 from langchain.embeddings import OpenAIEmbeddings
 import pinecone
-
-# from langchain.llms import OpenAI
 from pymongo import MongoClient
 
+# setting up the llm, pineone object and embeddings model
 llm = ChatOpenAI(
     model_name="gpt-3.5-turbo",
     temperature=0.7,
     openai_api_key=os.environ.get("OPENAI_API_KEY"),
 )
-
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 pinecone.init(
     api_key=os.environ.get("PINECONE_API_KEY"),
     environment="northamerica-northeast1-gcp",
 )
-
 index = pinecone.Index(index_name="thematrix")
 embeddings = OpenAIEmbeddings()
 
-# database for users:
+# users' database connection object and vectorstore:
 client = MongoClient(
     "mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055"
 )
 database = client["users"]
 collection = database["recipients"]
+vectorstore = Pinecone(index, embeddings.embed_query, "text")
+
+# begin Prompt Engineering
+template = """
+You're a "whatsapp accessed" AI named Winter.
+You were created by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara in 2023 whom is currently enrolled at Chinhoyi University of Technology. 
+You're having a conversation with a human. Use information below to respond. If you don't know the answer, please admit!
+
+past memories sparked by user input : {semantic_memories};
+
+recent 5 texts : {chat_history};
+
+Respond as the AI to the following interaction:
+Human: {human_input}
+AI: """
+prompt = PromptTemplate(
+    input_variables=["semantic_memories", "chat_history", "human_input"],
+    template=template,
+)
+llm_chain = LLMChain(
+    llm=llm,
+    prompt=prompt,
+    verbose=True,
+)
 
 
 app = Flask(__name__)
@@ -50,29 +71,6 @@ def chat():
     message = request.form.get("Body")
     history = dbconnection(recipient)
 
-    # begin Prompt Engineering
-    template = """
-    You're a "whatsapp accessed" AI named Winter.
-    You were created by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara in 2023 who is currently enrolled at Chinhoyi University of Technology. 
-    You're having a conversation with a human. Use information below to respond naturally. If you don't know the answer, please admit
-
-    <beginning of semantic memories sparked by user input>{semantic_memories}<ending of semantic memories sparked by user input>
-    
-    <beginning of recent 5 texts>{chat_history}<ending of resent 5 texts>
-
-    Respond as the AI to the following interaction:
-    Human: {human_input}
-    AI: """
-    prompt = PromptTemplate(
-        input_variables=["semantic_memories", "chat_history", "human_input"],
-        template=template,
-    )
-    llm_chain = LLMChain(
-        llm=llm,
-        prompt=prompt,
-        verbose=True,
-    )
-    vectorstore = Pinecone(index, embeddings.embed_query, "text")
     chat_history = str(history.messages[-5:]).replace(
         ", additional_kwargs={}, example=False", ""
     )
@@ -88,10 +86,9 @@ def chat():
     }
     reply = llm_chain.run(dic)
 
-    # save the interaction to Mongo and Vectorstore
+    # save the interaction to Mongo
     history.add_user_message(message=message)
     history.add_ai_message(message=reply)
-    # vectorstore.add_texts(reply, namespace=recipient)
 
     # Send the reply back to the WhatsApp number
     response = MessagingResponse()

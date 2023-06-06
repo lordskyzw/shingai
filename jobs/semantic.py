@@ -3,7 +3,6 @@ from pymongo import MongoClient
 import os
 from langchain.vectorstores import Pinecone
 from langchain.embeddings import OpenAIEmbeddings
-import openai
 from langchain.memory import MongoDBChatMessageHistory
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
