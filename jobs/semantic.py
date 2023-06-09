@@ -52,3 +52,4 @@ for phone_number in phone_numbers:
     )
     doc_texts = char_text_splitter.split_text(entire_history)
     vectorstore.add_texts(texts=doc_texts, namespace=phone_number)
+    print(f"added semantic memories for: {phone_number}")
