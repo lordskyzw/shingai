@@ -13,7 +13,7 @@ from pymongo import MongoClient
 # setting up the llm, pineone object and embeddings model
 llm = ChatOpenAI(
     model_name="gpt-3.5-turbo",
-    temperature=0.7,
+    temperature=0.9,
     openai_api_key=os.environ.get("OPENAI_API_KEY"),
 )
 openai_api_key = os.environ.get("OPENAI_API_KEY")
