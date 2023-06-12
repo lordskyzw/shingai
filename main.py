@@ -74,6 +74,7 @@ def chat():
         ", additional_kwargs={}, example=False", ""
     )
     chat_history.replace("content=", "")
+    chat_history.replace("(lc_kwargs={", "")
 
     # get response from the llm
     dic = {
