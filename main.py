@@ -58,18 +58,23 @@ llm_chain = LLMChain(
 app = Flask(__name__)
 
 
+def is_number_registered(number):
+    """checks if the phone number is registred"""
+    return collection.find_one({"id": number}) is not None
+
+
 @app.route("/chat", methods=["POST"])
 def chat():
     recipient = request.form.get("From")
     # Strip special characters and formatting from the phone number
     recipient = "".join(filter(str.isdigit, recipient))
-    # Save the recipient's phone number in the mongo user database
-    recipient_obj = {"id": recipient, "phone_number": recipient}
-    collection.insert_one(recipient_obj)
+    # Save the recipient's phone number in the mongo user if not registred already database
+    if not is_number_registered(recipient):
+        recipient_obj = {"id": recipient, "phone_number": recipient}
+        collection.insert_one(recipient_obj)
 
     message = request.form.get("Body")
     history = dbconnection(recipient)
-
     chat_history = str(history.messages[-5:]).replace(
         ", additional_kwargs={}, example=False", ""
     )
