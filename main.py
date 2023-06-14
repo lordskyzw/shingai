@@ -1,35 +1,34 @@
 import os
-from tools import *
+from .jobs.tools import *
+from .utilities.promptengineering import *
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
+from twilio.rest import Client
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain import PromptTemplate
 from langchain.vectorstores import Pinecone
 from langchain.embeddings import OpenAIEmbeddings
 import pinecone
-from pymongo import MongoClient
+
 
 # setting up the llm, pineone object and embeddings model
 llm = ChatOpenAI(
-    model_name="gpt-3.5-turbo",
+    model_name="gpt-3.5-turbo", # type: ignore
     temperature=0.9,
     openai_api_key=os.environ.get("OPENAI_API_KEY"),
 )
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 pinecone.init(
-    api_key=os.environ.get("PINECONE_API_KEY"),
+    api_key=os.environ.get("PINECONE_API_KEY"), # type: ignore
     environment="northamerica-northeast1-gcp",
 )
 index = pinecone.Index(index_name="thematrix")
-embeddings = OpenAIEmbeddings()
+embeddings = OpenAIEmbeddings() # type: ignore
 
 # users' database connection object and vectorstore:
-client = MongoClient(
-    "mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055"
-)
-database = client["users"]
-collection = database["recipients"]
+
+recipients_db = recipients_database()
 vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
 # begin Prompt Engineering
@@ -60,32 +59,34 @@ app = Flask(__name__)
 
 def is_number_registered(number):
     """checks if the phone number is registred"""
-    return collection.find_one({"id": number}) is not None
+    return recipients_db.find_one({"id": number}) is not None
 
 
 @app.route("/chat", methods=["POST"])
 def chat():
+
+##########################################  phone number operations  ############################################
+
     recipient = request.form.get("From")
     # Strip special characters and formatting from the phone number
-    recipient = "".join(filter(str.isdigit, recipient))
+    recipient = "".join(filter(str.isdigit, recipient)) # type: ignore
     # Save the recipient's phone number in the mongo user if not registred already database
     if not is_number_registered(recipient):
         recipient_obj = {"id": recipient, "phone_number": recipient}
-        collection.insert_one(recipient_obj)
+        recipients_db.insert_one(recipient_obj)
+
+    history = get_recipient_chat_history(recipient)
+    #cleaning the history
+    chat_history = clean_history(history)
+
+
+##########################################  message operations  ############################################
 
     message = request.form.get("Body")
-    history = dbconnection(recipient)
-    chat_history = str(history.messages[-5:]).replace(
-        ", additional_kwargs={}, example=False", ""
-    )
-    chat_history.replace("content=", "")
-    chat_history.replace(r"(lc_kwargs={", "")
-    chat_history.replace(r", 'additional_kwargs': {}", "")
-
     # get response from the llm
     dic = {
         "semantic_memories": str(
-            vectorstore.similarity_search(query=message, k=1, namespace=recipient)
+            vectorstore.similarity_search(query=message, k=1, namespace=recipient) # type: ignore
         ).replace(", metadata={}", ""),
         "chat_history": chat_history,
         "human_input": message,
@@ -93,8 +94,8 @@ def chat():
     reply = llm_chain.run(dic)
 
     # save the interaction to Mongo
-    history.add_user_message(message=message)
-    history.add_ai_message(message=reply)
+    history.add_user_message(message=message) # type: ignore
+    history.add_ai_message(message=reply) # type: ignore
 
     # Send the reply back to the WhatsApp number
     response = MessagingResponse()
@@ -102,6 +103,25 @@ def chat():
     return str(response)
 
 
+
+@app.route("/random_message", methods=["POST"])
+def random_message():
+    # Get a random recipient from the database
+    recipient = recipients_db.aggregate([{ "$sample": { "size": 1 } }]).next()["id"]
+    history = get_recipient_chat_history(recipient)
+    random_ai_message = create_random_message(clean_history=clean_history(history=history))
+    
+################################## Send the message to the recipient  #################################
+    try:
+        Client(os.environ.get("TWILIO_ACCOUNT_SID"), os.environ.get("TWILIO_AUTH_TOKEN")).messages.create(to=recipient, from_="whatsapp:+14155238886", body=random_ai_message)
+        history.history.add_ai_message(message=random_ai_message) # type: ignore
+    except Exception as e:
+        print(str(e))
+        return str(e)
+    
+    return str(random_ai_message)
+
+
 if __name__ == "__main__":
-    app.run(debug=True, port=os.getenv("PORT", default=5000))
-    client.close()
+    app.run(debug=True, port=os.getenv("PORT", default=5000)) # type: ignore
+    recipients_database.client.close()

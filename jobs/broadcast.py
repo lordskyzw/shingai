@@ -30,11 +30,11 @@ phone_numbers = list(phone_numbers)
 for phone_number in phone_numbers:
     message = twilio_client.messages.create(
         from_="whatsapp:+14155238886",
-        body="Apologies for the changes. ",
+        body="""Hey you.""",
         to=f"whatsapp:+{phone_number}",
     )
-    history = dbconnection(phone_number)
-    history.add_ai_message(message=message.body)
+    history = get_recipient_chat_history(phone_number)
+    history.add_ai_message(message=message.body) # type: ignore
     print(message.sid)
     print("Message sent to:", phone_number)
-    sleep(2)
+    sleep(1)
