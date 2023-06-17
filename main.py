@@ -1,6 +1,6 @@
 import os
-from .jobs.tools import *
-from .utilities.promptengineering import *
+from jobs.tools import *
+from utilities.promptengineering import *
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
