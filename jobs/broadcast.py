@@ -34,15 +34,12 @@ for phone_number in phone_numbers:
 
 We have an important announcement to share with you regarding Winter's availability. ❗️⚙️
 
-Please be informed that Winter is currently undergoing further development and improvements. As a result, Winter's services are temporarily unavailable. ⏳🚧
+Please be informed that Winter is currently undergoing further development and improvements. As a result, Winter's services may be unreliable even though she is available right now. ⏳🚧
 
 We apologize for any inconvenience this may cause and appreciate your patience and understanding during this development phase. 🙏
 
-Rest assured, our dedicated team is working diligently to bring Winter back to you with enhanced features and an even better user experience. 🛠️✨
+That said, The Winter team is looking for a hobbyist python developer to learn from us and help alleviate the development workload. If you are interested, please contact Tarmica Chiwara at: +263 779 281 345. 📞👨‍💻
 
-We understand how valuable Winter is to you, and we assure you that Winter will return with more capabilities to assist you. ⏰⏩
-
-We kindly request you to stay tuned for updates as we progress with the development process. We will keep you informed about Winter's expected return date as soon as it becomes available. 📆📢
 
 Once again, we apologize for any inconvenience caused and appreciate your ongoing support. We are excited to bring you an improved Winter very soon! 🌟😄
 
