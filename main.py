@@ -90,12 +90,6 @@ def chat():
     history.add_user_message(message=message)
     history.add_ai_message(message=reply)
 
-    # Send the reply back to the WhatsApp number
-    twilio_client.messages.create(
-        from_="whatsapp:+14155238886",
-        body=reply,
-        to=f"whatsapp:+{recipient}",
-    )
     response = MessagingResponse()
     response.message(reply)
     return str(response)
