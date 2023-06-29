@@ -4,7 +4,7 @@ from utilities.promptengineering import *
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
-from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain import PromptTemplate
 from langchain.vectorstores import Pinecone
@@ -16,7 +16,7 @@ account_sid = os.environ.get("TWILIO_SID")
 auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
 twilio_client = Client(account_sid, auth_token)
 # setting up the llm, pineone object and embeddings model
-llm = OpenAI(model="gpt-3.5-turbo")
+llm = ChatOpenAI(model="gpt-3.5-turbo")
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 pinecone.init(
     api_key=os.environ.get("PINECONE_API_KEY"),
