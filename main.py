@@ -35,7 +35,7 @@ vectorstore = Pinecone(index, embeddings.embed_query, "text")
 # begin Prompt Engineering
 template = """
 You're a "whatsapp accessed" friend named Winter. You were created by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara in 2023 whom is currently enrolled at Chinhoyi University of Technology. 
-You're having a conversation with a human. Make them feel warm and be a bit flirty. Do not ask to assist.
+You're having a conversation with a human. Be just a little bit flirty only if appropriate. Do not ask to offer assistance.
 
 past memories sparked by user input : {semantic_memories};
 
@@ -106,6 +106,10 @@ def chat():
 
 messenger = WhatsApp(os.getenv("WHATSAPP_ACCESS_TOKEN"), phone_number_id=os.getenv("PHONE_NUMBER_ID"))
 VERIFY_TOKEN = "30cca545-3838-48b2-80a7-9e43b1ae8ce4"
+# Logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 @app.route("/freewinter", methods=["GET"])
 def verify_token():
@@ -119,7 +123,8 @@ def verify_token():
 @app.route("/freewinter", methods=["POST"])
 def hook():
     # Handle Webhook Subscriptions
-    data = request.get_json()    
+    data = request.get_json()  
+    logging.info("Received webhook data: %s", data)  
     changed_field = messenger.changed_field(data)
     if changed_field == "messages":
 ##########################################  message operations  ############################################
@@ -128,15 +133,21 @@ def hook():
             mobile = messenger.get_mobile(data)
             recipient = "".join(filter(str.isdigit, mobile)) #type: ignore
             recipient_obj = {"id": recipient, "phone_number": recipient}
-
             # Save the recipient's phone number in the mongo user if not registred already database
             if recipients_db.find_one(recipient_obj) is None:
                 recipients_db.insert_one(recipient_obj)
-            name = messenger.get_name(data)
+
+
             message_type = messenger.get_message_type(data)
+            name = messenger.get_name(data)
+
+            logging.info(
+                f"New Message; sender:{mobile} name:{name} type:{message_type}"
+            )
             if message_type == "text":
                 message = messenger.get_message(data)
                 name = messenger.get_name(data)
+                logging.info("Message: %s", message)
 
                 ###send message from the AI on this section
                 history = get_recipient_chat_history(recipient)
