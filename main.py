@@ -103,6 +103,7 @@ def hook():
         if new_message:
             mobile = messenger.get_mobile(data)
             recipient = "".join(filter(str.isdigit, mobile)) #type: ignore
+            history = get_recipient_chat_history(recipient)
             recipient_obj = {"id": recipient, "phone_number": recipient}
             # Save the recipient's phone number in the mongo user if not registred already database
             if recipients_db.find_one(recipient_obj) is None:
@@ -127,7 +128,7 @@ def hook():
                 logging.info("Message: %s", message)
 
                 # get the chat history
-                history = get_recipient_chat_history(recipient)
+                
                 # cleaning the history
                 chat_history = clean_history(history)
 
