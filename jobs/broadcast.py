@@ -1,12 +1,10 @@
 from pymongo import MongoClient
-from twilio.rest import Client
-from tools import *
-import os
+from heyoo import WhatsApp
 from time import sleep
+import os
 
-account_sid = os.environ.get("TWILIO_SID")
-auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
-twilio_client = Client(account_sid, auth_token)
+
+messenger = WhatsApp(token=os.environ.get("WHATSAPP_ACCESS_TOKEN"), phone_number_id=os.environ.get("PHONE_NUMBER_ID"))
 
 # MongoDB configuration
 client = MongoClient(
@@ -21,38 +19,24 @@ recipients = collection.find()
 for recipient in recipients:
     phone_number = recipient["phone_number"]
     phone_numbers.add(phone_number)
-
-
 # Convert the set back to a list if needed
 phone_numbers = list(phone_numbers)
 
+
+    
 # Send a message to each recipient
 for phone_number in phone_numbers:
-    message = twilio_client.messages.create(
-        from_="whatsapp:+14155238886",
-        body="""📢 Attention, wonderful Winter users! 🤖🌟
+    messenger.send_message(message=
+        """hey, it's Winter.
 
-We have an important announcement to share with you regarding Winter's availability. ❗️⚙️
+        This is the new permanent WhatsApp number now! 🥳
+        
+        This may be the last time you'll be receiving a broadcast message like this. 
 
-Please be informed that Winter is currently undergoing further development and improvements. As a result, Winter's services may be unreliable even though she is available right now. ⏳🚧
-
-We apologize for any inconvenience this may cause and appreciate your patience and understanding during this development phase. 🙏
-
-That said, The Winter team is looking for a hobbyist python developer to learn from us and help alleviate the development workload. If you are interested, please contact Tarmica Chiwara at: +263 779 281 345. 📞👨‍💻
+        Thank you for enduring that whole joining phrase phase (that was a tongue twister!) 🙏🏾🤖🌟.
 
 
-Once again, we apologize for any inconvenience caused and appreciate your ongoing support. We are excited to bring you an improved Winter very soon! 🌟😄
-
-
-
-Thank you for your understanding and continued support!
-
-Warm regards,
-The Winter Team""",
-        to=f"whatsapp:+{phone_number}",
-    )
-    history = get_recipient_chat_history(phone_number)
-    history.add_ai_message(message=message.body) # type: ignore
-    print(message.sid)
+""", recipient_id=phone_number)
+    
     print("Message sent to:", phone_number)
     sleep(1)
