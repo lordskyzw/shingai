@@ -165,6 +165,12 @@ def hook():
                     "human_input": message,
                 }
                 reply = llm_chain.run(dic)
+
+                ####check if reply has [User's Name] and replace it with the user's name
+                if "[User's Name]" in reply:
+                    reply = reply.replace("[User's Name]", name) #type: ignore
+
+
                 messenger.send_message(reply, mobile)
                 # save the interaction to Mongo
                 history.add_user_message(message=message) #type: ignore
