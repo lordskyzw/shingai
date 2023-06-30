@@ -104,7 +104,7 @@ def chat():
 
 
 
-messenger = WhatsApp(os.environ.get("WHATSAPP_ACCESS_TOKEN"), phone_number_id=os.environ.get("PHONE_NUMBER_ID"))
+messenger = WhatsApp(token="EAAOtcSk30jwBABZC8XRhiYkn0uqX03RBs3Qois85x0VVMNIsHZAVCDnPVkUMIvTdk9TKqwQmZChZBMRG6E5EnuzzsSAGHvfYOncAjWvQN1xwWoYgZBOgaHCZCNPkqnZC9pOHEE4upWnu23UyZCEthiJVih9XQFFmQI65uzE1DCejE6pgXBdYXVGS", phone_number_id="101879622956347")
 VERIFY_TOKEN = "30cca545-3838-48b2-80a7-9e43b1ae8ce4"
 # Logging
 logging.basicConfig(
