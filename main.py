@@ -114,11 +114,11 @@ logging.basicConfig(
 @app.get("/freewinter")
 def verify_token():
     if request.args.get("hub.verify_token") == VERIFY_TOKEN:
-        logging.info("Verified webhook")
+        print("Verified webhook")
         response = make_response(request.args.get("hub.challenge"), 200)
         response.mimetype = "text/plain"
         return response
-    logging.error("Webhook Verification failed")
+    print("Webhook Verification failed")
     return "Invalid verification token"
 
 
