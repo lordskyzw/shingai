@@ -12,9 +12,7 @@ import logging
 from heyoo import WhatsApp
 
 
-# account_sid = os.environ.get("TWILIO_SID")
-# auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
-# twilio_client = Client(account_sid, auth_token)
+
 # setting up the llm, pineone object and embeddings model
 llm = ChatOpenAI(model="gpt-3.5-turbo") #type: ignore
 openai_api_key = os.environ.get("OPENAI_API_KEY")
