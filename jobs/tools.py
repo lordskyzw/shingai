@@ -7,7 +7,14 @@ from langchain.prompts import PromptTemplate
 import pinecone
 import os
 from pymongo import MongoClient
+import logging
+import requests
 
+
+
+token = os.environ.get("WHATSAPP_ACCESS_TOKEN")
+phone_number_id = os.environ.get("PHONE_NUMBER_ID")
+v15_base_url = "https://graph.facebook.com/v15.0"
 
 ########################################  history retrieval functions  ########################################
 def get_recipient_chat_history(recipient):
@@ -64,7 +71,7 @@ def create_or_update_semantic_memories(recipient):
     embeddings = OpenAIEmbeddings()  # type: ignore
     # create vectorstore object
     vectorstore = Pinecone(
-        embeddings.embed_query, "text", index="thematrix", namespace=recipient
+        embeddings.embed_query, "text", index="thematrix", namespace=recipient # type: ignore
     )  # type: ignore
     vector_embeddings = [
         [0.2, 0.4, -0.1, 0.8, -0.5],
@@ -88,8 +95,8 @@ def get_semantic_memories(message, recipient):
     embeddings = OpenAIEmbeddings()  # type: ignore
     # create vectorstore object
     vectorstore = Pinecone(
-        embeddings.embed_query, "text", index="thematrix", namespace=recipient
-    )  # type: ignore
+        embeddings.embed_query, "text", index="thematrix", namespace=recipient # type: ignore
+    )#type: ignore
     # get semantic results
     try:
         semantic_results = vectorstore.similarity_search(
@@ -112,3 +119,36 @@ def summarize_memories(semantic_memories):
                             
                             {semantic_memories}""",
     )
+
+
+def mark_as_read_by_winter(message_id: str):
+        """
+        Marks a message as read
+
+        Args:
+            message_id[str]: Id of the message to be marked as read
+
+        Returns:
+            Dict[Any, Any]: Response from the API
+
+        Example:
+            >>> from whatsapp import WhatsApp
+            >>> whatsapp = WhatsApp(token, phone_number_id)
+            >>> whatsapp.mark_as_read("message_id")
+        """
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+
+        json_data = {
+            "messaging_product": "whatsapp",
+            "status": "read",
+            "message_id": message_id,
+        }
+        logging.info(f"Marking message {message_id} as read")
+        requests.post(
+            f"{v15_base_url}/{phone_number_id}/messages",
+            headers=headers,
+            json=json_data,
+        ).json()

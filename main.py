@@ -118,8 +118,12 @@ def hook():
             if message_type == "text":
                 message = messenger.get_message(data)
                 # blue tick
-                #message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
-                #messenger.mark_as_read(message_id=message_id)
+                message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
+                try:
+                    mark_as_read_by_winter(message_id=message_id)
+                except Exception as e:
+                    logging.info(str(e))
+
                 logging.info("Message: %s", message)
 
                 # get the chat history
