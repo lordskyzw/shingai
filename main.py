@@ -2,8 +2,6 @@ import os
 from jobs.tools import *
 from utilities.promptengineering import *
 from flask import Flask, request, make_response
-# from twilio.twiml.messaging_response import MessagingResponse
-# from twilio.rest import Client
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain import PromptTemplate
