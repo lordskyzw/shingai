@@ -108,10 +108,10 @@ messenger = WhatsApp(os.getenv("WHATSAPP_ACCESS_TOKEN"), phone_number_id=os.gete
 VERIFY_TOKEN = "30cca545-3838-48b2-80a7-9e43b1ae8ce4"
 # Logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", force=True
 )
 
-@app.route("/freewinter", methods=["GET"])
+@app.get("/freewinter")
 def verify_token():
     if request.args.get("hub.verify_token") == VERIFY_TOKEN:
         response = make_response(request.args.get("hub.challenge"), 200)
@@ -120,7 +120,7 @@ def verify_token():
     return "Invalid verification token"
 
 
-@app.route("/freewinter", methods=["POST"])
+@app.post("/freewinter")
 def hook():
     # Handle Webhook Subscriptions
     data = request.get_json()  

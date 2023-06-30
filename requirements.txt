@@ -4,6 +4,5 @@ openai
 langchain
 twilio
 pymongo
-openai
 pinecone-client
 heyoo

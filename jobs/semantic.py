@@ -1,10 +1,10 @@
-import pinecone
 from pymongo import MongoClient
 import os
-from langchain.vectorstores import Pinecone
-from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import MongoDBChatMessageHistory
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import Pinecone
+from langchain.embeddings.openai import OpenAIEmbeddings
+import pinecone
 
 
 ##########################       STEP ONE          ####################################
