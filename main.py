@@ -119,7 +119,7 @@ def hook():
                 message = messenger.get_message(data)
                 # blue tick
                 message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
-                messenger.mark_as_read(message_id)
+                messenger.mark_as_read(message_id=message_id)
                 logging.info("Message: %s", message)
 
                 # get the chat history
