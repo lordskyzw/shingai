@@ -2,8 +2,8 @@ import os
 from jobs.tools import *
 from utilities.promptengineering import *
 from flask import Flask, request, make_response
-from twilio.twiml.messaging_response import MessagingResponse
-from twilio.rest import Client
+# from twilio.twiml.messaging_response import MessagingResponse
+# from twilio.rest import Client
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain import PromptTemplate
@@ -14,9 +14,9 @@ import logging
 from heyoo import WhatsApp
 
 
-account_sid = os.environ.get("TWILIO_SID")
-auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
-twilio_client = Client(account_sid, auth_token)
+# account_sid = os.environ.get("TWILIO_SID")
+# auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+# twilio_client = Client(account_sid, auth_token)
 # setting up the llm, pineone object and embeddings model
 llm = ChatOpenAI(model="gpt-3.5-turbo") #type: ignore
 openai_api_key = os.environ.get("OPENAI_API_KEY")
@@ -62,43 +62,43 @@ logging.basicConfig(
 )
 
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    ##########################################  phone number operations  ############################################
+# @app.route("/chat", methods=["POST"])
+# def chat():
+#     ##########################################  phone number operations  ############################################
 
-    recipient = request.form.get("From")
-    # Strip special characters and formatting from the phone number
-    recipient = "".join(filter(str.isdigit, recipient)) #type: ignore
-    recipient_obj = {"id": recipient, "phone_number": recipient}
+#     recipient = request.form.get("From")
+#     # Strip special characters and formatting from the phone number
+#     recipient = "".join(filter(str.isdigit, recipient)) #type: ignore
+#     recipient_obj = {"id": recipient, "phone_number": recipient}
 
-    # Save the recipient's phone number in the mongo user if not registred already database
-    if recipients_db.find_one(recipient_obj) is None:
-        recipients_db.insert_one(recipient_obj)
+#     # Save the recipient's phone number in the mongo user if not registred already database
+#     if recipients_db.find_one(recipient_obj) is None:
+#         recipients_db.insert_one(recipient_obj)
 
-    history = get_recipient_chat_history(recipient)
-    # cleaning the history
-    chat_history = clean_history(history)
+#     history = get_recipient_chat_history(recipient)
+#     # cleaning the history
+#     chat_history = clean_history(history)
 
-    ##########################################  message operations  ############################################
+#     ##########################################  message operations  ############################################
 
-    message = request.form.get("Body")
-    # get response from the llm
-    dic = {
-        "semantic_memories": str(
-            vectorstore.similarity_search(query=message, k=3, namespace=recipient) #type: ignore
-        ).replace(", metadata={}", ""),
-        "chat_history": chat_history,
-        "human_input": message,
-    }
-    reply = llm_chain.run(dic)
+#     message = request.form.get("Body")
+#     # get response from the llm
+#     dic = {
+#         "semantic_memories": str(
+#             vectorstore.similarity_search(query=message, k=3, namespace=recipient) #type: ignore
+#         ).replace(", metadata={}", ""),
+#         "chat_history": chat_history,
+#         "human_input": message,
+#     }
+#     reply = llm_chain.run(dic)
 
-    # save the interaction to Mongo
-    history.add_user_message(message=message) #type: ignore
-    history.add_ai_message(message=reply) #type: ignore
+#     # save the interaction to Mongo
+#     history.add_user_message(message=message) #type: ignore
+#     history.add_ai_message(message=reply) #type: ignore
 
-    response = MessagingResponse()
-    response.message(reply)
-    return str(response)
+#     response = MessagingResponse()
+#     response.message(reply)
+#     return str(response)
 
 
 
