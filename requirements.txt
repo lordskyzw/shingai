@@ -6,3 +6,4 @@ twilio
 pymongo
 pinecone-client
 heyoo
+tiktoken

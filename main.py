@@ -49,10 +49,10 @@ past memories sparked by user input : {semantic_memories};
 recent 5 texts : {chat_history};
 
 Respond as the AI to the following interaction:
-{name}: {human_input}
+{time_stamp}{name}: {human_input}
 AI: """
 prompt = PromptTemplate(
-    input_variables=["semantic_memories", "chat_history", "name", "human_input"],
+    input_variables=["semantic_memories", "chat_history","time_stamp" "name", "human_input"],
     template=template,
 )
 llm_chain = LLMChain(
@@ -104,6 +104,8 @@ def hook():
             mobile = messenger.get_mobile(data)
             recipient = "".join(filter(str.isdigit, mobile)) #type: ignore
             history = get_recipient_chat_history(recipient)
+            # cleaning the history
+            chat_history = clean_history(history)
             recipient_obj = {"id": recipient, "phone_number": recipient}
             # Save the recipient's phone number in the mongo user if not registred already database
             if recipients_db.find_one(recipient_obj) is None:
@@ -112,6 +114,8 @@ def hook():
 
             message_type = messenger.get_message_type(data)
             name = messenger.get_name(data)
+            time_stamp = messenger.get_message_timestamp(data)
+            message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
 
             logging.info(
                 f"New Message; sender:{mobile} name:{name} type:{message_type}"
@@ -119,7 +123,7 @@ def hook():
             if message_type == "text":
                 message = messenger.get_message(data)
                 # blue tick
-                message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
+                
                 try:
                     mark_as_read_by_winter(message_id=message_id)
                 except Exception as e:
@@ -127,17 +131,13 @@ def hook():
 
                 logging.info("Message: %s", message)
 
-                # get the chat history
-                
-                # cleaning the history
-                chat_history = clean_history(history)
-
                 # get response from the llm
                 dic = {
                     "semantic_memories": str(
                         vectorstore.similarity_search(query=message, k=3, namespace=recipient) #type: ignore
                     ).replace(", metadata={}", ""),
                     "chat_history": chat_history,
+                    "time_stamp": time_stamp,
                     "name": name,
                     "human_input": message,
                 }
@@ -148,7 +148,7 @@ def hook():
                     reply = reply.replace("[User's Name]", name) #type: ignore
 
                 # send the reply
-                messenger.send_message(reply, mobile)
+                messenger.reply_to_message(message_id=message_id, message=reply, recipient_id=mobile) #type: ignore
                 # save the interaction to Mongo
                 history.add_user_message(message=message) #type: ignore
                 history.add_ai_message(message=reply) #type: ignore
