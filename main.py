@@ -52,7 +52,7 @@ Respond as the AI to the following interaction:
 {time_stamp}{name}: {human_input}
 AI: """
 prompt = PromptTemplate(
-    input_variables=["semantic_memories", "chat_history","time_stamp" "name", "human_input"],
+    input_variables=["semantic_memories", "chat_history", "time_stamp", "name", "human_input"],
     template=template,
 )
 llm_chain = LLMChain(
