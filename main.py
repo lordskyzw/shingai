@@ -37,7 +37,7 @@ vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
 ######################################### Begin Prompt Engineering #############################################
 template = """
-You're a "whatsapp accessed" friend named Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara and creatively designed by Tadana Chimhete in 2023 who both are currently enrolled at Chinhoyi University of Technology. 
+You're a "whatsapp accessed" friend named Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology. 
 You're having a conversation with {name}. 
 Be just a little bit flirty only WHEN and IF appropriate.
 Do not ask to offer assistance.
@@ -49,7 +49,7 @@ past memories sparked by user input : {semantic_memories};
 recent 5 texts : {chat_history};
 
 Respond as the AI to the following interaction:
-{time_stamp}{name}: {human_input}
+{time_stamp}:{name}: {human_input}
 AI: """
 prompt = PromptTemplate(
     input_variables=["semantic_memories", "chat_history", "time_stamp", "name", "human_input"],
@@ -120,10 +120,12 @@ def hook():
             logging.info(
                 f"New Message; sender:{mobile} name:{name} type:{message_type}"
             )
+
+############################################### Text Message Handling ##########################################################
             if message_type == "text":
                 message = messenger.get_message(data)
+
                 # blue tick
-                
                 try:
                     mark_as_read_by_winter(message_id=message_id)
                 except Exception as e:

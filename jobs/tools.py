@@ -32,7 +32,7 @@ def get_recipient_chat_history(recipient):
 
 def clean_history(history):
     """does string operations to clean the history therefore reducing the size of the prompt sent to the llm"""
-    clean_history = str(history.messages[-5:]).replace(
+    clean_history = str(history.messages[-14:]).replace(
         ", additional_kwargs={}, example=False", ""
     )
     clean_history.replace("content=", "")
