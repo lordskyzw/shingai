@@ -152,6 +152,7 @@ def hook():
                 # check if reply has [User's Name] and replace it with the user's name
                 if "[User's Name]" in reply:
                     reply = reply.replace("[User's Name]", name) #type: ignore
+                    reply.replace("Hey Tarmica! ", "")
 
                 # send the reply
                 messenger.reply_to_message(message_id=message_id, message=reply, recipient_id=mobile) #type: ignore
