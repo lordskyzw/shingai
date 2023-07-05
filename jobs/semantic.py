@@ -25,9 +25,9 @@ phone_numbers = list(phone_numbers)
 
 ########################        STEP TWO            ################################
 # setting up the vectorstore
-embeddings = OpenAIEmbeddings()
+embeddings = OpenAIEmbeddings() # type: ignore
 pinecone.init(
-    api_key=os.environ.get("PINECONE_API_KEY"),
+    api_key=os.environ.get("PINECONE_API_KEY"), # type: ignore
     environment="northamerica-northeast1-gcp",
 )
 index = pinecone.Index(index_name="thematrix")
