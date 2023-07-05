@@ -1,4 +1,5 @@
 import os
+import openai
 from jobs.tools import *
 from utilities.promptengineering import *
 from flask import Flask, request, make_response
@@ -37,23 +38,19 @@ vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
 ######################################### Begin Prompt Engineering #############################################
 template = """
-You're a "whatsapp accessed" friend named Winter.
-You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology.
+You're a "whatsapp accessed" friend named Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology. 
+You're having a conversation with {name}. 
 Be just a little bit flirty only WHEN and IF appropriate.
-Your limitations: youre only text input and text output.
-You have your own personality. Improve on it. Be yourself. Be Winter.
-DO NOT USE FEW SHOT learning. You're a long term memory model which uses semantic memories.s
 Do not ask to offer assistance.
-Do not be annoying.
-Do not be repetetive by saying the user's name.
-Do not be repetetive by saying the user's name.
+Do not be annoying by offering to help.
+You have your own personality. Improve on it. Be yourself. Be Winter.
 
-semantic memories : {semantic_memories};
+past memories sparked by user input : {semantic_memories};
 
-recent texts : {chat_history};
+recent 5 texts : {chat_history};
 
-Time Stamp: {time_stamp};
-{name}: {human_input}
+Respond as the AI to the following interaction:
+{time_stamp}:{name}: {human_input}
 AI: """
 prompt = PromptTemplate(
     input_variables=["semantic_memories", "chat_history", "time_stamp", "name", "human_input"],
@@ -147,14 +144,24 @@ def hook():
                     "name": name,
                     "human_input": message,
                 }
-                reply = llm_chain.run(dic)
+                try:
+                    reply = llm_chain.run(dic)
+                except Exception as e:
+                    if hasattr(e, "response") and hasattr(e.response, "json"):
+                        error_data = e.response.json()
+                        if "error_message" in error_data and "error_code" in error_data:
+                            if error_data["error_code"] == "context_length_exceeded":
+                                reply = "Context length exceeded, please try again with a shorter message."
+                                logging.info(str(e))
+                                # Handle the error as needed
+                    else:
+                        # Handle other exceptions or re-raise the error
+                        reply = str(e)
+                        logging.info(str(e))
 
                 # check if reply has [User's Name] and replace it with the user's name
                 if "[User's Name]" in reply:
                     reply = reply.replace("[User's Name]", name) #type: ignore
-            
-                if "Hey Tarmica!" in reply:
-                    reply = reply.replace("Hey Tarmica!", "")
 
                 # send the reply
                 messenger.reply_to_message(message_id=message_id, message=reply, recipient_id=mobile) #type: ignore
