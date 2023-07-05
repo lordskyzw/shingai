@@ -152,7 +152,7 @@ def hook():
                 # check if reply has [User's Name] and replace it with the user's name
                 if "[User's Name]" in winter_response:
                     winter_response = winter_response.replace("[User's Name]", name) #type: ignore
-                    reply = winter_response.replace("Hey Tarmica! ", "")
+                    reply = winter_response.replace("Hey Tarmica!", "")
 
                 # send the reply
                 messenger.reply_to_message(message_id=message_id, message=reply, recipient_id=mobile) #type: ignore
