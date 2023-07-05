@@ -155,7 +155,7 @@ def hook():
                     reply = winter_response.replace("Hey Tarmica! ", "")
 
                 # send the reply
-                messenger.reply_to_message(message_id=message_id, message=winter_response, recipient_id=mobile) #type: ignore
+                messenger.reply_to_message(message_id=message_id, message=reply, recipient_id=mobile) #type: ignore
                 # save the interaction to Mongo
                 history.add_user_message(message=message) #type: ignore
                 history.add_ai_message(message=reply) #type: ignore
