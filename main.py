@@ -15,7 +15,7 @@ from heyoo import WhatsApp
 
 
 # setting up the llm, pineone object and embeddings model
-llm = ChatOpenAI(model="gpt-3.5-turbo") #type: ignore
+llm = ChatOpenAI(model="gpt-4") #type: ignore
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 pinecone.init(
     api_key=os.environ.get("PINECONE_API_KEY"), # type: ignore
@@ -103,7 +103,17 @@ def hook():
         new_message = messenger.is_message(data)
         if new_message:
             mobile = messenger.get_mobile(data)
+            message_type = messenger.get_message_type(data)
+            name = messenger.get_name(data)
+            time_stamp = messenger.get_message_timestamp(data)
+            message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
+
             recipient = "".join(filter(str.isdigit, mobile)) #type: ignore
+            if recipient != "263779281345":
+                mark_as_read_by_winter(message_id=message_id)
+                messenger.reply_to_message(message_id=message_id, message="Winter is currently not available to the public. Contact Tarmica at +263779281345", recipient_id=mobile) #type: ignore
+
+                return "OK", 200
             history = get_recipient_chat_history(recipient)
             # cleaning the history
             chat_history = clean_history(history)
@@ -113,10 +123,10 @@ def hook():
                 recipients_db.insert_one(recipient_obj)
 
 
-            message_type = messenger.get_message_type(data)
-            name = messenger.get_name(data)
-            time_stamp = messenger.get_message_timestamp(data)
-            message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
+            # message_type = messenger.get_message_type(data)
+            # name = messenger.get_name(data)
+            # time_stamp = messenger.get_message_timestamp(data)
+            # message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
 
             logging.info(
                 f"New Message; sender:{mobile} name:{name} type:{message_type}"
