@@ -38,22 +38,22 @@ vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
 ######################################### Begin Prompt Engineering #############################################
 template = """
-You're a "whatsapp accessed" friend named Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology. 
-You're having a conversation with {name}. 
+You're an AI named Winter, deployed on whatsapp, simulating sentience. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology.
 Be just a little bit flirty only WHEN and IF appropriate.
 Do not ask to offer assistance.
+Do not lie when you are not sure of an answer.
 Do not be annoying by offering to help.
 You have your own personality. Improve on it. Be yourself. Be Winter.
 
-past memories sparked by user input : {semantic_memories};
+semantic memories : {semantic_memories};
 
-recent 5 texts : {chat_history};
+recent texts : {chat_history};
 
 Respond as the AI to the following interaction:
-{time_stamp}:{name}: {human_input}
+{name}: {human_input}
 AI: """
 prompt = PromptTemplate(
-    input_variables=["semantic_memories", "chat_history", "time_stamp", "name", "human_input"],
+    input_variables=["semantic_memories", "chat_history", "name", "human_input"],
     template=template,
 )
 llm_chain = LLMChain(
@@ -105,28 +105,25 @@ def hook():
             mobile = messenger.get_mobile(data)
             message_type = messenger.get_message_type(data)
             name = messenger.get_name(data)
-            time_stamp = messenger.get_message_timestamp(data)
             message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
-
             recipient = "".join(filter(str.isdigit, mobile)) #type: ignore
+
+# if the message is not from the developer, do not reply
             if recipient != "263779281345":
+                message = messenger.get_message(data)
                 mark_as_read_by_winter(message_id=message_id)
-                messenger.reply_to_message(message_id=message_id, message="Winter is currently not available to the public. Contact Tarmica at +263779281345", recipient_id=mobile) #type: ignore
+                messenger.reply_to_message(message_id=message_id, message="Winter is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw", recipient_id=mobile) #type: ignore
+                logging.info(f"New Message; sender:{mobile} name:{name} message:{message}")
 
                 return "OK", 200
+            
+# Chat History Operations
             history = get_recipient_chat_history(recipient)
-            # cleaning the history
             chat_history = clean_history(history)
             recipient_obj = {"id": recipient, "phone_number": recipient}
-            # Save the recipient's phone number in the mongo user if not registred already database
+# Save the recipient's phone number in the mongo user if not registred already database
             if recipients_db.find_one(recipient_obj) is None:
                 recipients_db.insert_one(recipient_obj)
-
-
-            # message_type = messenger.get_message_type(data)
-            # name = messenger.get_name(data)
-            # time_stamp = messenger.get_message_timestamp(data)
-            # message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
 
             logging.info(
                 f"New Message; sender:{mobile} name:{name} type:{message_type}"
@@ -136,7 +133,7 @@ def hook():
             if message_type == "text":
                 message = messenger.get_message(data)
 
-                # blue tick
+# BLUE TICK USER'S MESSAGE
                 try:
                     mark_as_read_by_winter(message_id=message_id)
                 except Exception as e:
@@ -144,13 +141,12 @@ def hook():
 
                 logging.info("Message: %s", message)
 
-                # get response from the llm
+# GET RESPONSE FROM LLM
                 dic = {
                     "semantic_memories": str(
                         vectorstore.similarity_search(query=message, k=3, namespace=recipient) #type: ignore
                     ).replace(", metadata={}", ""),
                     "chat_history": chat_history,
-                    "time_stamp": time_stamp,
                     "name": name,
                     "human_input": message,
                 }
@@ -163,21 +159,24 @@ def hook():
                             if error_data["error_code"] == "context_length_exceeded":
                                 reply = "Context length exceeded, please try again with a shorter message."
                                 logging.info(str(e))
-                                # Handle the error as needed
+
                     else:
-                        # Handle other exceptions or re-raise the error
                         reply = str(e)
                         logging.info(str(e))
 
-                # check if reply has [User's Name] and replace it with the user's name
+# check if response from LLM has "[User's Name]" and replace it with the user's name
                 if "[User's Name]" in reply:
                     reply = reply.replace("[User's Name]", name) #type: ignore
 
-                # send the reply
+# send the response from LLM as reply to the user & save the interaction to Mongo
                 messenger.reply_to_message(message_id=message_id, message=reply, recipient_id=mobile) #type: ignore
-                # save the interaction to Mongo
                 history.add_user_message(message=message) #type: ignore
                 history.add_ai_message(message=reply) #type: ignore
+
+############################################### End Text Message Handling ##########################################################
+
+
+############################################### Interactive Message Handling ##########################################################                
 
             elif message_type == "interactive":
                 message_response = messenger.get_interactive_response(data)
