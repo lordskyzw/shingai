@@ -65,6 +65,7 @@ messenger = WhatsApp(token=os.environ.get("WHATSAPP_ACCESS_TOKEN"), phone_number
 VERIFY_TOKEN = "30cca545-3838-48b2-80a7-9e43b1ae8ce4"
 #################################### End Prompt Engineering #####################################################
 
+whitelist = ["263779281345", "263777213597", "265982659389", "263717094755", "263786913190", "263786522612"]
 
 app = Flask(__name__)
 
@@ -109,7 +110,7 @@ def hook():
             recipient = "".join(filter(str.isdigit, mobile)) #type: ignore
 
 # if the message is not from the developer, do not reply
-            if recipient != "263779281345":
+            if recipient not in whitelist :
                 message = messenger.get_message(data)
                 mark_as_read_by_winter(message_id=message_id)
                 messenger.reply_to_message(message_id=message_id, message="Winter is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw", recipient_id=mobile) #type: ignore
