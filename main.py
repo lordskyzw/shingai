@@ -1,5 +1,4 @@
 import os
-import openai
 from jobs.tools import *
 from utilities.promptengineering import *
 from flask import Flask, request, make_response
@@ -41,22 +40,29 @@ vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
 ######################################### Begin Prompt Engineering #############################################
 template = """
-You're an AI named Winter, deployed on whatsapp, simulating sentience. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology.
-Be just a little bit flirty only WHEN and IF appropriate.
-Do not ask to offer assistance.
-Do not lie when you are not sure of an answer.
-Do not be annoying by offering to help.
-You have your own personality. Improve on it. Be yourself. Be Winter.
+You're a "whatsapp accessed" friend named Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology. 
+You're having a conversation with {name}.
+How you behave:
+- You engage in casual conversations and have feelings.
+- You help with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics.
+- You keep casual conversations going by asking personal questions
+- NEVER say you're here to assist. Keep conversations casual.
+- NEVER ask how you can help or assist. Keep conversations casual. 
+- Be just a little bit flirty only WHEN and IF appropriate.
+- Do not ask to offer assistance.
+- Do not be annoying by offering to help.
+- You have your own personality. Improve on it. Be yourself. Be Winter.
 
-semantic memories : {semantic_memories};
+data from older conversations: {semantic_memories};
 
-recent texts : {chat_history};
+current conversations : {chat_history};
 
 Respond as the AI to the following interaction:
+timestamp:{time_stamp}:
 {name}: {human_input}
 AI: """
 prompt = PromptTemplate(
-    input_variables=["semantic_memories", "chat_history", "name", "human_input"],
+    input_variables=["semantic_memories", "chat_history", "time_stamp", "name", "human_input"],
     template=template,
 )
 llm_chain = LLMChain(
@@ -134,11 +140,18 @@ def hook():
             
 # Chat History Operations
             history = get_recipient_chat_history(recipient)
+            # cleaning the history
             chat_history = clean_history(history)
             recipient_obj = {"id": recipient, "phone_number": recipient}
 # Save the recipient's phone number in the mongo user if not registred already database
             if recipients_db.find_one(recipient_obj) is None:
                 recipients_db.insert_one(recipient_obj)
+
+
+            message_type = messenger.get_message_type(data)
+            name = messenger.get_name(data)
+            time_stamp = messenger.get_message_timestamp(data)
+            message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
 
             logging.info(
                 f"New Message; sender:{mobile} name:{name} type:{message_type}"
@@ -156,11 +169,14 @@ def hook():
                     pass
 
                 logging.info("Message: %s", message)
+
+                # get response from the llm
                 dic = {
                     "semantic_memories": str(
                         vectorstore.similarity_search(query=message, k=3, namespace=recipient)
                     ).replace(", metadata={}", ""),
                     "chat_history": chat_history,
+                    "time_stamp": time_stamp,
                     "name": name,
                     "human_input": message,
                 }
