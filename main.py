@@ -14,22 +14,25 @@ from heyoo import WhatsApp
 
 
 
+############################################# FUNDAMENTAL SETTINGS ##################################################
+
+
 # setting up the llm, pineone object and embeddings model
-llm = ChatOpenAI(model="gpt-4") #type: ignore
+llm = ChatOpenAI(model="gpt-4")
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 pinecone.init(
     api_key=os.environ.get("PINECONE_API_KEY"), # type: ignore
     environment="northamerica-northeast1-gcp",
 )
 index = pinecone.Index(index_name="thematrix")
-embeddings = OpenAIEmbeddings() #type: ignore
+embeddings = OpenAIEmbeddings()
 
 # users' database connection object and vectorstore:
 
 recipients_db = recipients_database()
 vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
-
+########################################### END FUNDAMENTAL SETTINGS #################################################
 
 
 
@@ -61,17 +64,21 @@ llm_chain = LLMChain(
     prompt=prompt,
     verbose=True,
 )
-messenger = WhatsApp(token=os.environ.get("WHATSAPP_ACCESS_TOKEN"), phone_number_id=os.environ.get("PHONE_NUMBER_ID"))
-VERIFY_TOKEN = "30cca545-3838-48b2-80a7-9e43b1ae8ce4"
+
 #################################### End Prompt Engineering #####################################################
 
-whitelist = ["263779281345", "263777213597", "265982659389", "263717094755", "263786913190", "263786522612"]
 
-app = Flask(__name__)
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+
+####################################### WhatsApp Settings #####################################################
+
+messenger = WhatsApp(token=os.environ.get("WHATSAPP_ACCESS_TOKEN"), phone_number_id=os.environ.get("PHONE_NUMBER_ID"))
+VERIFY_TOKEN = "30cca545-3838-48b2-80a7-9e43b1ae8ce4"
+whitelist = ["263779281345", "265982659389", "263717094755"]
+
+######################################## End WhatsApp Settings ######################################################
+
+
 
 
 
@@ -79,6 +86,13 @@ logging.basicConfig(
 ######################################### Begin Webhook ########################################################
 #########################################               ########################################################
 ################################################################################################################
+
+
+app = Flask(__name__)
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 
 @app.get("/freewinter")
@@ -107,13 +121,13 @@ def hook():
             message_type = messenger.get_message_type(data)
             name = messenger.get_name(data)
             message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
-            recipient = "".join(filter(str.isdigit, mobile)) #type: ignore
+            recipient = "".join(filter(str.isdigit, mobile))
 
 # if the message is not from the developer, do not reply
             if recipient not in whitelist :
                 message = messenger.get_message(data)
                 mark_as_read_by_winter(message_id=message_id)
-                messenger.reply_to_message(message_id=message_id, message="Winter is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw", recipient_id=mobile) #type: ignore
+                messenger.reply_to_message(message_id=message_id, message="Winter is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw", recipient_id=mobile)
                 logging.info(f"New Message; sender:{mobile} name:{name} message:{message}")
 
                 return "OK", 200
@@ -139,18 +153,18 @@ def hook():
                     mark_as_read_by_winter(message_id=message_id)
                 except Exception as e:
                     logging.info(str(e))
+                    pass
 
                 logging.info("Message: %s", message)
-
-# GET RESPONSE FROM LLM
                 dic = {
                     "semantic_memories": str(
-                        vectorstore.similarity_search(query=message, k=3, namespace=recipient) #type: ignore
+                        vectorstore.similarity_search(query=message, k=3, namespace=recipient)
                     ).replace(", metadata={}", ""),
                     "chat_history": chat_history,
                     "name": name,
                     "human_input": message,
                 }
+# GET RESPONSE FROM LLM
                 try:
                     reply = llm_chain.run(dic)
                 except Exception as e:
@@ -160,20 +174,19 @@ def hook():
                             if error_data["error_code"] == "context_length_exceeded":
                                 reply = "Context length exceeded, please try again with a shorter message."
                                 logging.info(str(e))
-
+                                #return "OK", 200
+                            else:
+                                reply = str(e)
+                                logging.info(reply)
                     else:
                         reply = str(e)
                         logging.info(str(e))
-
-# check if response from LLM has "[User's Name]" and replace it with the user's name
-                if "[User's Name]" in reply:
-                    reply = reply.replace("[User's Name]", name) #type: ignore
-
 # send the response from LLM as reply to the user & save the interaction to Mongo
-                messenger.reply_to_message(message_id=message_id, message=reply, recipient_id=mobile) #type: ignore
-                history.add_user_message(message=message) #type: ignore
-                history.add_ai_message(message=reply) #type: ignore
+                messenger.reply_to_message(message_id=message_id, message=reply, recipient_id=mobile)
+                history.add_user_message(message=message)
+                history.add_ai_message(message=reply)
 
+                return "OK", 200
 ############################################### End Text Message Handling ##########################################################
 
 
@@ -181,38 +194,38 @@ def hook():
 
             elif message_type == "interactive":
                 message_response = messenger.get_interactive_response(data)
-                interactive_type = message_response.get("type") #type: ignore
-                message_id = message_response[interactive_type]["id"] #type: ignore
-                message_text = message_response[interactive_type]["title"]  #type: ignore
+                interactive_type = message_response.get("type")
+                message_id = message_response[interactive_type]["id"]
+                message_text = message_response[interactive_type]["title"] 
 
             elif message_type == "location":
                 message_location = messenger.get_location(data)
-                message_latitude = message_location["latitude"] #type: ignore
-                message_longitude = message_location["longitude"] #type: ignore
+                message_latitude = message_location["latitude"]
+                message_longitude = message_location["longitude"]
                 
             ###### This part is very important if the AI is to be able to manage media files
             elif message_type == "image":
                 # image = messenger.get_image(data)
-                # image_id, mime_type = image["id"], image["mime_type"] #type: ignore
+                # image_id, mime_type = image["id"], image["mime_type"]
                 # image_url = messenger.query_media_url(image_id)
-                # image_filename = messenger.download_media(image_url, mime_type) #type: ignore
+                # image_filename = messenger.download_media(image_url, mime_type)
                 messenger.send_message("I don't know how to handle images yet", mobile)
-                history.add_ai_message(message="I do not know how to handle images yet") #type: ignore
+                history.add_ai_message(message="I do not know how to handle images yet")
                 
 
             elif message_type == "video":
                 messenger.send_message("I don't know how to handle videos yet", mobile)
-                history.add_ai_message(message="I do not know how to handle videos yet") #type: ignore
+                history.add_ai_message(message="I do not know how to handle videos yet")
 
 
             elif message_type == "audio":
                 messenger.send_message("I don't know how to handle audio yet", mobile)
-                history.add_ai_message(message="I do not know how to handle audio yet") #type: ignore
+                history.add_ai_message(message="I do not know how to handle audio yet")
 
 
             elif message_type == "document":
                 messenger.send_message("I don't know how to handle documents yet", mobile)
-                history.add_ai_message(message="I do not know how to handle documents yet") #type: ignore
+                history.add_ai_message(message="I do not know how to handle documents yet")
         else:
             delivery = messenger.get_delivery(data)
             if delivery:
@@ -223,5 +236,5 @@ def hook():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=os.getenv("PORT", default=5000)) #type: ignore
+    app.run(debug=True, port=os.getenv("PORT", default=5000))
     recipients_database.client.close()
