@@ -17,7 +17,7 @@ from heyoo import WhatsApp
 
 
 # setting up the llm, pineone object and embeddings model
-llm = ChatOpenAI(model="gpt-4")
+llm = ChatOpenAI(model="gpt-3.5-turbo-0613")
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 pinecone.init(
     api_key=os.environ.get("PINECONE_API_KEY"), # type: ignore
