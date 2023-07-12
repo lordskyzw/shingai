@@ -1,3 +1,4 @@
+import openai
 from langchain.memory import MongoDBChatMessageHistory
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
@@ -100,7 +101,7 @@ def get_semantic_memories(message, recipient):
     # get semantic results
     try:
         semantic_results = vectorstore.similarity_search(
-            query=message, k=5, namespace=recipient
+            query=message, k=5
         )
         return str(semantic_results)
     except Exception:
@@ -119,8 +120,8 @@ def summarize_memories(semantic_memories):
                             
                             {semantic_memories}""",
     )
-
-
+#############################################################################################################################################
+########################################### CUSTOM WINTER FUNCTIONS #########################################################################
 def mark_as_read_by_winter(message_id: str):
         """
         Marks a message as read
@@ -154,3 +155,9 @@ def mark_as_read_by_winter(message_id: str):
         ).json()
 
         return "OK", 200
+
+
+def transcribe_audio(audio):
+    transcription = openai.Audio.transcribe("whisper-1", audio)
+    return transcription
+

@@ -148,7 +148,6 @@ def hook():
             if recipients_db.find_one(recipient_obj) is None:
                 recipients_db.insert_one(recipient_obj)
 
-
             message_type = messenger.get_message_type(data)
             name = messenger.get_name(data)
             time_stamp = messenger.get_message_timestamp(data)
@@ -157,24 +156,20 @@ def hook():
             logging.info(
                 f"New Message; sender:{mobile} name:{name} type:{message_type}"
             )
+# BLUE TICK USER'S MESSAGE
+            try:
+                mark_as_read_by_winter(message_id=message_id)
+            except Exception as e:
+                logging.info(str(e))
+            logging.info("Message: %s", message)
 
 ############################################### Text Message Handling ##########################################################
             if message_type == "text":
                 message = messenger.get_message(data)
-
-# BLUE TICK USER'S MESSAGE
-                try:
-                    mark_as_read_by_winter(message_id=message_id)
-                except Exception as e:
-                    logging.info(str(e))
-                    pass
-
-                logging.info("Message: %s", message)
-
                 # get response from the llm
                 dic = {
                     "semantic_memories": str(
-                        vectorstore.similarity_search(query=message, k=3, namespace=recipient)
+                       get_semantic_memories(message=message, recipient=recipient)
                     ).replace(", metadata={}", ""),
                     "chat_history": chat_history,
                     "time_stamp": time_stamp,
@@ -222,10 +217,10 @@ def hook():
                 
             ###### This part is very important if the AI is to be able to manage media files
             elif message_type == "image":
-                # image = messenger.get_image(data)
-                # image_id, mime_type = image["id"], image["mime_type"]
-                # image_url = messenger.query_media_url(image_id)
-                # image_filename = messenger.download_media(image_url, mime_type)
+                image = messenger.get_image(data)
+                image_id, mime_type = image["id"], image["mime_type"]
+                image_url = messenger.query_media_url(image_id)
+                image_filename = messenger.download_media(image_url, mime_type)
                 messenger.send_message("I don't know how to handle images yet", mobile)
                 history.add_ai_message(message="I do not know how to handle images yet")
                 
@@ -234,12 +229,45 @@ def hook():
                 messenger.send_message("I don't know how to handle videos yet", mobile)
                 history.add_ai_message(message="I do not know how to handle videos yet")
 
-
+############################################# AUDIO HANDLING ###########################################################
             elif message_type == "audio":
-                messenger.send_message("I don't know how to handle audio yet", mobile)
-                history.add_ai_message(message="I do not know how to handle audio yet")
+                audio = messenger.get_audio(data=data)
+                transcription = transcribe_audio(audio=audio)
+                dic = {
+                    "semantic_memories": str(
+                       get_semantic_memories(message=transcription, recipient=recipient)
+                    ).replace(", metadata={}", ""),
+                    "chat_history": chat_history,
+                    "time_stamp": time_stamp,
+                    "name": name,
+                    "human_input": transcription,
+                }
+# GET RESPONSE FROM LLM
+                try:
+                    reply = llm_chain.run(dic)
+                except Exception as e:
+                    if hasattr(e, "response") and hasattr(e.response, "json"):
+                        error_data = e.response.json()
+                        if "error_message" in error_data and "error_code" in error_data:
+                            if error_data["error_code"] == "context_length_exceeded":
+                                reply = "Context length exceeded, please try again with a shorter message."
+                                logging.info(str(e))
+                                #return "OK", 200
+                            else:
+                                reply = str(e)
+                                logging.info(reply)
+                    else:
+                        reply = str(e)
+                        logging.info(str(e))
+# send the response from LLM as reply to the user & save the interaction to Mongo
+                messenger.reply_to_message(message_id=message_id, message=reply, recipient_id=mobile)
+                history.add_user_message(message=message)
+                history.add_ai_message(message=reply)
 
+                return "OK", 200
+######################################## END AUDIO HANDLING ############################################################################
 
+######################################## DOCUMENT HANDLING ##############################################################################   
             elif message_type == "document":
                 messenger.send_message("I don't know how to handle documents yet", mobile)
                 history.add_ai_message(message="I do not know how to handle documents yet")
