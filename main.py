@@ -29,7 +29,7 @@ embeddings = OpenAIEmbeddings()
 # users' database connection object and vectorstore:
 
 recipients_db = recipients_database()
-#vectorstore = Pinecone(index, embeddings.embed_query, "text")
+vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
 ########################################### END FUNDAMENTAL SETTINGS #################################################
 
@@ -169,7 +169,7 @@ def hook():
                 # get response from the llm
                 dic = {
                     "semantic_memories": str(
-                       get_semantic_memories(message=message, recipient=recipient))
+                       vectorstore.similarity_search(query=message, k=5, namespace=recipient))
                     .replace(", metadata={}", ""),
                     "chat_history": chat_history,
                     "time_stamp": time_stamp,
