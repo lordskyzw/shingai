@@ -132,13 +132,13 @@ def hook():
             recipient = "".join(filter(str.isdigit, mobile))
 
 # if the message is not from the developer, do not reply
-            # if recipient not in whitelist :
-            #     message = messenger.get_message(data)
-            #     mark_as_read_by_winter(message_id=message_id)
-            #     messenger.reply_to_message(message_id=message_id, message="Winter is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw", recipient_id=mobile)
-            #     logging.info(f"New Message; sender:{mobile} name:{name} message:{message}")
+            if recipient not in whitelist :
+                message = messenger.get_message(data)
+                mark_as_read_by_winter(message_id=message_id)
+                messenger.reply_to_message(message_id=message_id, message="Winter is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw", recipient_id=mobile)
+                logging.info(f"New Message; sender:{mobile} name:{name} message:{message}")
 
-            #     return "OK", 200
+                return "OK", 200
             
 # Chat History Operations
             history = get_recipient_chat_history(recipient)
@@ -233,6 +233,7 @@ def hook():
 ############################################# AUDIO HANDLING ###########################################################
             elif message_type == "audio":
                 audio = messenger.get_audio(data=data)
+                audio_id =audio["id"]
                 transcription = transcribe_audio(audio=audio)
                 dic = {
                     "semantic_memories": str(
