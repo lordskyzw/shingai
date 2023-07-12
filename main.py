@@ -161,16 +161,16 @@ def hook():
                 mark_as_read_by_winter(message_id=message_id)
             except Exception as e:
                 logging.info(str(e))
-            logging.info("Message: %s", message)
 
 ############################################### Text Message Handling ##########################################################
             if message_type == "text":
                 message = messenger.get_message(data)
+                logging.info("Message: %s", message)
                 # get response from the llm
                 dic = {
                     "semantic_memories": str(
-                       get_semantic_memories(message=message, recipient=recipient)
-                    ).replace(", metadata={}", ""),
+                       get_semantic_memories(message=message, recipient=recipient))
+                    .replace(", metadata={}", ""),
                     "chat_history": chat_history,
                     "time_stamp": time_stamp,
                     "name": name,
