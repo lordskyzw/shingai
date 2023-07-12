@@ -96,7 +96,7 @@ def get_semantic_memories(message, recipient):
     embeddings = OpenAIEmbeddings() 
     # create vectorstore object
     vectorstore = Pinecone(
-        embeddings.embed_query, "text", index="thematrix", namespace=recipient
+        embeddings.embed_query, "text", namespace=recipient
     )
     # get semantic results
     try:

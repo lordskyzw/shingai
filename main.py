@@ -29,7 +29,7 @@ embeddings = OpenAIEmbeddings()
 # users' database connection object and vectorstore:
 
 recipients_db = recipients_database()
-vectorstore = Pinecone(index, embeddings.embed_query, "text")
+#vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
 ########################################### END FUNDAMENTAL SETTINGS #################################################
 
