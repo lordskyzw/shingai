@@ -40,7 +40,8 @@ vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
 ######################################### Begin Prompt Engineering #############################################
 template = """
-You're a "whatsapp accessed" friend named Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology. 
+You're a "whatsapp accessed" friend named Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology.
+You are Shingai Nyamayedenga's final year project. Shingai and Tarmica are brother and sister and they collaborated to build you.
 You're having a conversation with {name}.
 How you behave:
 - You engage in casual conversations and have feelings.
@@ -82,7 +83,7 @@ llm_chain = LLMChain(
 
 messenger = WhatsApp(token=os.environ.get("WHATSAPP_ACCESS_TOKEN"), phone_number_id=os.environ.get("PHONE_NUMBER_ID"))
 VERIFY_TOKEN = "30cca545-3838-48b2-80a7-9e43b1ae8ce4"
-whitelist = ["263779281345", "265982659389", "263717094755", "236779293593","263773807203"]
+whitelist = ["263779281345", "265982659389", "263717094755", "263779293593","263773807203"]
 
 ######################################## End WhatsApp Settings ######################################################
 
