@@ -40,7 +40,8 @@ vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
 ######################################### Begin Prompt Engineering #############################################
 template = """
-You're named Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology as his assistant in his lab called Matrix.
+You're named Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology 
+You are his scientific assistant.
 You are Shingai Nyamayedenga's final year project. Shingai and Tarmica are brother and sister and they collaborated to build you.
 You're having a conversation with {name}.
 How you behave:
