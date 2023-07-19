@@ -80,7 +80,7 @@ llm_chain = LLMChain(
 
 messenger = WhatsApp(token=os.environ.get("WHATSAPP_ACCESS_TOKEN"), phone_number_id=os.environ.get("PHONE_NUMBER_ID"))
 VERIFY_TOKEN = "30cca545-3838-48b2-80a7-9e43b1ae8ce4"
-whitelist = ["263779281345", "265982659389", "263717094755", "263779293593","263773807203"]
+whitelist = ["263779281345", "263779293593"]
 
 ######################################## End WhatsApp Settings ######################################################
 
