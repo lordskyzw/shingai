@@ -15,14 +15,14 @@ import re
 
 
 # setting up the llm, pineone object and embeddings model
-llm = ChatOpenAI(model="gpt-3.5-turbo")  # type: ignore
+llm = ChatOpenAI(model="gpt-3.5-turbo")
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 pinecone.init(
-    api_key=os.environ.get("PINECONE_API_KEY"),  # type: ignore
+    api_key=os.environ.get("PINECONE_API_KEY"),
     environment="northamerica-northeast1-gcp",
 )
 index = pinecone.Index(index_name="thematrix")
-embeddings = OpenAIEmbeddings()  # type: ignore
+embeddings = OpenAIEmbeddings()
 
 # users' database connection object and vectorstore:
 
@@ -157,7 +157,7 @@ def hook():
                 # # get response from the llm
                 # dic = {
                 #     "semantic_memories": str(
-                #         vectorstore.similarity_search(query=message, k=3, namespace=recipient)  # type: ignore
+                #         vectorstore.similarity_search(query=message, k=3, namespace=recipient)
                 #     ).replace(", metadata={}", ""),
                 #     "chat_history": chat_history,
                 #     "time_stamp": time_stamp,
@@ -165,7 +165,6 @@ def hook():
                 #     "human_input": message,
                 # }
                 output = agent(message, return_only_outputs=True)
-
                 reply = output["output"]
 
                 reply_contains_image = re.findall(image_pattern, reply)
@@ -183,23 +182,25 @@ def hook():
                         history.add_ai_message(message=reply)
                 else:
                     # send the reply
-                    messenger.reply_to_message(message_id=message_id, message=reply, recipient_id=mobile)  # type: ignore
+                    messenger.reply_to_message(
+                        message_id=message_id, message=reply, recipient_id=mobile
+                    )
                     # save the interaction to Mongo
-                    history.add_user_message(message=message)  # type: ignore
-                    history.add_ai_message(message=reply)  # type: ignore
+                    history.add_user_message(message=message)
+                    history.add_ai_message(message=reply)
 
             ############################## END TEXT MESSAGE HANDLING ###################################################
 
             elif message_type == "interactive":
                 message_response = messenger.get_interactive_response(data)
-                interactive_type = message_response.get("type")  # type: ignore
-                message_id = message_response[interactive_type]["id"]  # type: ignore
-                message_text = message_response[interactive_type]["title"]  # type: ignore
+                interactive_type = message_response.get("type")
+                message_id = message_response[interactive_type]["id"]
+                message_text = message_response[interactive_type]["title"]
 
             elif message_type == "location":
                 message_location = messenger.get_location(data)
-                message_latitude = message_location["latitude"]  # type: ignore
-                message_longitude = message_location["longitude"]  # type: ignore
+                message_latitude = message_location["latitude"]
+                message_longitude = message_location["longitude"]
 
             ###### This part is very important if the AI is to be able to manage media files
             elif message_type == "image":
@@ -208,13 +209,14 @@ def hook():
                 # image_url = messenger.query_media_url(image_id)
                 # image_filename = messenger.download_media(image_url, mime_type) #type: ignore
                 messenger.send_message("I don't know how to handle images yet", mobile)
-                history.add_ai_message(message="I do not know how to handle images yet")  # type: ignore
+                history.add_ai_message(message="I do not know how to handle images yet")
 
             elif message_type == "video":
                 messenger.send_message("I don't know how to handle videos yet", mobile)
-                history.add_ai_message(message="I do not know how to handle videos yet")  # type: ignore
+                history.add_ai_message(message="I do not know how to handle videos yet")
 
             elif message_type == "audio":
+                messenger.mark_as_read(message_id=message_id)
                 audio = messenger.get_audio(data=data)
                 audio_id, mime_type = audio["id"], audio["mime_type"]
                 audio_url = messenger.query_media_url(audio_id)
@@ -223,15 +225,23 @@ def hook():
                 )
                 audio_file = open(audio_uri, "rb")
                 transcript = openai.Audio.transcribe("whisper-1", audio_file)
-                print(transcript)
-                messenger.send_message("I don't know how to handle audio yet", mobile)
-                history.add_ai_message(message="I do not know how to handle audio yet")  # type: ignore
+                transcript = transcript["text"]
+                output = agent(message, return_only_outputs=True)
+                reply = output["output"]
+
+                messenger.reply_to_message(
+                    message_id=message_id, recipient_id=mobile, message=reply
+                )
+                history.add_user_message(message=transcript)
+                history.add_ai_message(message=reply)
 
             elif message_type == "document":
                 messenger.send_message(
                     "I don't know how to handle documents yet", mobile
                 )
-                history.add_ai_message(message="I do not know how to handle documents yet")  # type: ignore
+                history.add_ai_message(
+                    message="I do not know how to handle documents yet"
+                )
         else:
             delivery = messenger.get_delivery(data)
             if delivery:
@@ -242,5 +252,5 @@ def hook():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=os.getenv("PORT", default=5000))  # type: ignore
+    app.run(debug=True, port=os.getenv("PORT", default=5000))
     recipients_database.client.close()
