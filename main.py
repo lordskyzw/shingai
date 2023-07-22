@@ -168,8 +168,13 @@ def hook():
                 reply = output["output"]
 
                 reply_contains_image = re.findall(image_pattern, reply)
-                # Replace all image URLs with an empty string
                 reply_without_links = re.sub(image_pattern, "", reply)
+                colon_index = reply_without_links.find(":")
+                if colon_index != -1:
+                    # Extract the substring before the colon (excluding the colon)
+                    reply_without_links = reply_without_links[:colon_index]
+                    # Remove leading and trailing spaces
+                    reply_without_links = reply_without_links.strip()
                 if reply_contains_image:
                     for image_url in reply_contains_image:
                         messenger.send_image(
