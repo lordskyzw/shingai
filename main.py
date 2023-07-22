@@ -107,12 +107,12 @@ def hook():
         new_message = messenger.is_message(data)
         if new_message:
             mobile = messenger.get_mobile(data)
-            message_type = messenger.get_message_type(data)
             name = messenger.get_name(data)
-            message_id = data["entry"][0]["changes"][0]["value"]["messages"][0]["id"]
+            message_type = messenger.get_message_type(data)
             recipient = "".join(filter(str.isdigit, mobile))
+            message_id = data["entry"][0]["changes"][0]["value"]["messages"][0]["id"]
 
-            # if the message is not from the developer, do not reply
+            # implement whitelist
             if recipient not in whitelist:
                 message = messenger.get_message(data)
                 mark_as_read_by_winter(message_id=message_id)
@@ -135,7 +135,6 @@ def hook():
                 recipients_db.insert_one(recipient_obj)
 
             message_type = messenger.get_message_type(data)
-            name = messenger.get_name(data)
             time_stamp = messenger.get_message_timestamp(data)
             message_id = data["entry"][0]["changes"][0]["value"]["messages"][0]["id"]
 
@@ -216,6 +215,8 @@ def hook():
                 history.add_ai_message(message="I do not know how to handle videos yet")  # type: ignore
 
             elif message_type == "audio":
+                audio = messenger.get_audio(data=data)
+                print(audio)
                 messenger.send_message("I don't know how to handle audio yet", mobile)
                 history.add_ai_message(message="I do not know how to handle audio yet")  # type: ignore
 
