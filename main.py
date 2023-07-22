@@ -107,7 +107,10 @@ def hook():
         new_message = messenger.is_message(data)
         if new_message:
             mobile = messenger.get_mobile(data)
-            recipient = "".join(filter(str.isdigit, mobile))  # type: ignore
+            message_type = messenger.get_message_type(data)
+            name = messenger.get_name(data)
+            message_id = data["entry"][0]["changes"][0]["value"]["messages"][0]["id"]
+            recipient = "".join(filter(str.isdigit, mobile))
 
             # if the message is not from the developer, do not reply
             if recipient not in whitelist:
