@@ -2,6 +2,7 @@ import os
 from langchain.llms import OpenAI
 import openai
 import requests
+from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMMathChain
 from langchain.agents import Tool
 from langchain.utilities import SerpAPIWrapper
@@ -28,7 +29,7 @@ class WebGallery:
         return response["images_results"][0]["original"]
 
 
-llm = OpenAI(
+llm = ChatOpenAI(
     openai_api_key=os.environ.get("OPENAI_API_KEY"),
     temperature=0,
     model_name="gpt-4",  # type: ignore
