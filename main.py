@@ -215,6 +215,7 @@ def hook():
                 messenger.send_message("I don't know how to handle videos yet", mobile)
                 history.add_ai_message(message="I do not know how to handle videos yet")
 
+            ######################## Audio Message Handling ###########################################
             elif message_type == "audio":
                 messenger.mark_as_read(message_id=message_id)
                 audio = messenger.get_audio(data=data)
@@ -228,12 +229,26 @@ def hook():
                 transcript = transcript["text"]
                 output = agent(transcript, return_only_outputs=True)
                 reply = output["output"]
-
-                messenger.reply_to_message(
-                    message_id=message_id, recipient_id=mobile, message=reply
-                )
-                history.add_user_message(message=transcript)
-                history.add_ai_message(message=reply)
+                # if the output contains an image
+                reply_contains_image = re.findall(image_pattern, reply)
+                reply_without_links = re.sub(image_pattern, "", reply)
+                if reply_contains_image:
+                    for image_url in reply_contains_image:
+                        messenger.send_image(
+                            image=image_url,
+                            recipient_id=recipient,
+                            caption=reply_without_links,
+                            link=True,
+                        )
+                        history.add_user_message(message=message)
+                        history.add_ai_message(message=reply)
+                else:
+                    messenger.reply_to_message(
+                        message_id=message_id, recipient_id=mobile, message=reply
+                    )
+                    history.add_user_message(message=transcript)
+                    history.add_ai_message(message=reply)
+            ############################# End Audio Message Handling ######################################
 
             elif message_type == "document":
                 messenger.send_message(
