@@ -240,7 +240,7 @@ def hook():
                             caption=reply_without_links,
                             link=True,
                         )
-                        history.add_user_message(message=message)
+                        history.add_user_message(message=transcript)
                         history.add_ai_message(message=reply)
                 else:
                     messenger.reply_to_message(
