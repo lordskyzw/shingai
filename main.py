@@ -119,7 +119,26 @@ def hook():
         new_message = messenger.is_message(data)
         if new_message:
             mobile = messenger.get_mobile(data)
-            recipient = "".join(filter(str.isdigit, mobile))  # type: ignore
+            message_type = messenger.get_message_type(data)
+            name = messenger.get_name(data)
+            message_id = data["entry"][0]["changes"][0]["value"]["messages"][0]["id"]
+            recipient = "".join(filter(str.isdigit, mobile))
+
+            # if the message is not from the developer, do not reply
+            if recipient not in whitelist:
+                message = messenger.get_message(data)
+                mark_as_read_by_winter(message_id=message_id)
+                messenger.reply_to_message(
+                    message_id=message_id,
+                    message="Winter is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw",
+                    recipient_id=mobile,
+                )
+                logging.info(
+                    f"New Message; sender:{mobile} name:{name} message:{message}"
+                )
+
+                return "OK", 200
+            # cleaning the history
             history = get_recipient_chat_history(recipient)
             chat_history = clean_history(history)
             recipient_obj = {"id": recipient, "phone_number": recipient}
