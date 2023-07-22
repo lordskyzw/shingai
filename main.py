@@ -215,7 +215,8 @@ def hook():
                 audio_id, mime_type = audio["id"], audio["mime_type"]
                 audio_url = messenger.query_media_url(audio_id)
                 audio_uri = messenger.download_media(
-                    media_url=audio_url, mime_type=mime_type, file_path="voicenotes/"
+                    media_url=audio_url,
+                    mime_type="audio/{}".format(mime_type),
                 )
                 audio_file = open(audio_uri, "rb")
                 transcript = openai.Audio.transcribe("whisper-1", audio_file)
