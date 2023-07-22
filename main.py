@@ -234,7 +234,7 @@ def hook():
                 audio_file = open(audio_uri, "rb")
                 transcript = openai.Audio.transcribe("whisper-1", audio_file)
                 transcript = transcript["text"]
-                output = agent(message, return_only_outputs=True)
+                output = agent(transcript, return_only_outputs=True)
                 reply = output["output"]
 
                 messenger.reply_to_message(
