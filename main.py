@@ -212,7 +212,14 @@ def hook():
 
             elif message_type == "audio":
                 audio = messenger.get_audio(data=data)
-                print(audio)
+                audio_id, mime_type = audio["id"], audio["mime_type"]
+                audio_url = messenger.query_media_url(audio_id)
+                audio_uri = messenger.download_media(
+                    media_url=audio_url, mime_type=mime_type, file_path="voicenotes/"
+                )
+                audio_file = open(audio_uri, "rb")
+                transcript = openai.Audio.transcribe("whisper-1", audio_file)
+                print(transcript)
                 messenger.send_message("I don't know how to handle audio yet", mobile)
                 history.add_ai_message(message="I do not know how to handle audio yet")  # type: ignore
 
