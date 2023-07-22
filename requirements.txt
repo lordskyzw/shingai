@@ -6,4 +6,4 @@ pymongo
 pinecone-client
 heyoo
 tiktoken
-google-serp-api
+google-search-results
