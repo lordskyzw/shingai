@@ -2,8 +2,8 @@ flask>=2.0.0
 gunicorn>=20.1.0
 openai
 langchain
-twilio
 pymongo
 pinecone-client
 heyoo
 tiktoken
+serpapi

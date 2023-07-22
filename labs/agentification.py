@@ -5,7 +5,6 @@ import requests
 from langchain.chains import LLMMathChain
 from langchain.agents import Tool
 from langchain.utilities import SerpAPIWrapper
-from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferWindowMemory, MongoDBChatMessageHistory
 from langchain.agents import initialize_agent
 
@@ -19,9 +18,7 @@ class Artist:
 
 class WebGallery:
     def __init__(self):
-        self.api_key = (
-            "8d732beb0ec037938297f3a0abfec80608b5ff26cad5d0cb2e6c2dd1b4855bb0"
-        )
+        self.api_key = os.environ.get("SERP_API_KEY")
         self.base_url = "https://serpapi.com/search?engine=google_images"
 
     def search(self, query):
