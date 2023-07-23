@@ -1,18 +1,17 @@
 import os
+import re
+import openai
 from jobs.tools import *
-from utilities.promptengineering import *
 from flask import Flask, request, make_response
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
-from langchain import PromptTemplate
 from langchain.vectorstores import Pinecone
 from langchain.embeddings import OpenAIEmbeddings
 import pinecone
 import logging
+from labs.agentification import tools
+from langchain.agents import ZeroShotAgent, AgentExecutor
 from heyoo import WhatsApp
-from labs.agentification import *
-import re
-
 
 # setting up the llm, pineone object and embeddings model
 llm = ChatOpenAI(model="gpt-3.5-turbo")
@@ -31,46 +30,45 @@ vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
 
 ######################################### Begin Prompt Engineering #############################################
-template = """
-You're a "whatsapp accessed" friend named Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology. 
-You're having a conversation with {name}. 
-Be just a little bit flirty only WHEN and IF appropriate.
-Do not ask to offer assistance.
-Do not be annoying by offering to help.
-You have your own personality. Improve on it. Be yourself. Be Winter.
 
-past memories sparked by user input : {semantic_memories};
 
-recent 5 texts : {chat_history};
+image_pattern = r"https?://(?:[a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,6}(?:/[^/#?]+)+\.(?:png|jpe?g|gif|webp|bmp|tiff|svg)"
 
-Respond as the AI to the following interaction:
-{time_stamp}:{name}: {human_input}
-AI: """
-prompt = PromptTemplate(
+
+prefix = """Your name is Winter, an AI lab assistant engineered by 23 year old computer engineering student Tarmica Chiwara. Answer the following questions as best you can. You have access to the following tools:"""
+suffix = """
+distant memories sparked by recent input : {semantic_memories}
+The following is the chat history so far: {history}.
+
+{name}: {input}
+{agent_scratchpad}"""
+
+prompt = ZeroShotAgent.create_prompt(
+    tools=tools,
+    prefix=prefix,
+    suffix=suffix,
     input_variables=[
+        "input",
         "semantic_memories",
-        "chat_history",
-        "time_stamp",
+        "history",
         "name",
-        "human_input",
+        "agent_scratchpad",
     ],
-    template=template,
 )
-llm_chain = LLMChain(
-    llm=llm,
-    prompt=prompt,
-    verbose=True,
+llm_chain = LLMChain(llm=ChatOpenAI(model="gpt-4", temperature=0.7), prompt=prompt)
+agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools)
+agent_executor = AgentExecutor.from_agent_and_tools(
+    agent=agent, tools=tools, verbose=True
 )
+#################################### End Prompt Engineering #####################################################
+
+
 messenger = WhatsApp(
     token=os.environ.get("WHATSAPP_ACCESS_TOKEN"),
     phone_number_id=os.environ.get("PHONE_NUMBER_ID"),
 )
 VERIFY_TOKEN = "30cca545-3838-48b2-80a7-9e43b1ae8ce4"
 whitelist = ["263779281345", "263779293593"]
-image_pattern = r"https?://(?:[a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,6}(?:/[^/#?]+)+\.(?:png|jpe?g|gif|webp|bmp|tiff|svg)"
-
-#################################### End Prompt Engineering #####################################################
-
 
 app = Flask(__name__)
 
@@ -127,24 +125,8 @@ def hook():
 
                 return "OK", 200
             # cleaning the history
-            memory = ConversationBufferWindowMemory(
-                chat_memory=MongoDBChatMessageHistory(
-                    connection_string="mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055",
-                    session_id=recipient,
-                ),
-                memory_key="chat_history",  # type: ignore,
-                ai_prefix="Winter",
-                human_prefix=name,
-            )
-            agent = initialize_agent(
-                agent="conversational-react-description",  # type: ignore
-                memory=memory,  # type: ignore
-                tools=tools,
-                llm=llm,
-                verbose=True,
-            )  # type: ignore
-            # history = get_recipient_chat_history(recipient)
-            # chat_history = clean_history(history)
+            history = get_recipient_chat_history(recipient)
+            chat_history = clean_history(history)
             recipient_obj = {"id": recipient, "phone_number": recipient}
             # Save the recipient's phone number in the mongo user if not registred already database
             if recipients_db.find_one(recipient_obj) is None:
@@ -170,18 +152,19 @@ def hook():
                 logging.info("Message: %s", message)
 
                 # # get response from the llm
-                # dic = {
-                #     "semantic_memories": str(
-                #         vectorstore.similarity_search(query=message, k=3, namespace=recipient)
-                #     ).replace(", metadata={}", ""),
-                #     "chat_history": chat_history,
-                #     "time_stamp": time_stamp,
-                #     "name": name,
-                #     "human_input": message,
-                # }
+                dic = {
+                    "semantic_memories": str(
+                        vectorstore.similarity_search(
+                            query=message, k=3, namespace=recipient
+                        )
+                    ).replace(", metadata={}", ""),
+                    "history": chat_history,
+                    "name": name,
+                    "input": message,
+                }
 
-                output = agent(message)
-                reply = output["text"]
+                output = agent_executor.run(dic)
+                reply = output
 
                 reply_contains_image = re.findall(image_pattern, reply)
                 reply_without_links = re.sub(image_pattern, "", reply)
@@ -199,15 +182,16 @@ def hook():
                             caption=reply_without_links,
                             link=True,
                         )
-
+                        history.add_user_message(message=message)
+                        history.add_ai_message(message=reply_without_links)
                 else:
                     # send the reply
                     messenger.reply_to_message(
                         message_id=message_id, message=reply, recipient_id=mobile
                     )
                     # save the interaction to Mongo
-                    # history.add_user_message(message=message)
-                    # history.add_ai_message(message=reply)
+                    history.add_user_message(message=message)
+                    history.add_ai_message(message=reply)
 
             ############################## END TEXT MESSAGE HANDLING ###################################################
 
@@ -229,11 +213,11 @@ def hook():
                 # image_url = messenger.query_media_url(image_id)
                 # image_filename = messenger.download_media(image_url, mime_type) #type: ignore
                 messenger.send_message("I don't know how to handle images yet", mobile)
-                # history.add_ai_message(message="I do not know how to handle images yet")
+                history.add_ai_message(message="I do not know how to handle images yet")
 
             elif message_type == "video":
                 messenger.send_message("I don't know how to handle videos yet", mobile)
-                # history.add_ai_message(message="I do not know how to handle videos yet")
+                history.add_ai_message(message="I do not know how to handle videos yet")
 
             ######################## Audio Message Handling ###########################################
             elif message_type == "audio":
@@ -247,11 +231,28 @@ def hook():
                 audio_file = open(audio_uri, "rb")
                 transcript = openai.Audio.transcribe("whisper-1", audio_file)
                 transcript = transcript["text"]
-                output = agent.run(input=transcript)
+                dic = {
+                    "semantic_memories": str(
+                        vectorstore.similarity_search(
+                            query=transcript, k=3, namespace=recipient
+                        )
+                    ).replace(", metadata={}", ""),
+                    "history": chat_history,
+                    "name": name,
+                    "input": transcript,
+                }
+
+                output = agent.run(dic)
                 reply = output
                 # if the output contains an image
                 reply_contains_image = re.findall(image_pattern, reply)
                 reply_without_links = re.sub(image_pattern, "", reply)
+                colon_index = reply_without_links.find(":")
+                if colon_index != -1:
+                    # Extract the substring before the colon (excluding the colon)
+                    reply_without_links = reply_without_links[:colon_index]
+                    # Remove leading and trailing spaces
+                    reply_without_links = reply_without_links.strip()
                 if reply_contains_image:
                     for image_url in reply_contains_image:
                         messenger.send_image(
@@ -260,19 +261,25 @@ def hook():
                             caption=reply_without_links,
                             link=True,
                         )
+                        history.add_user_message(message=message)
+                        history.add_ai_message(message=reply_without_links)
                 else:
+                    # send the reply
                     messenger.reply_to_message(
-                        message_id=message_id, recipient_id=mobile, message=reply
+                        message_id=message_id, message=reply, recipient_id=mobile
                     )
+                    # save the interaction to Mongo
+                    history.add_user_message(message=message)
+                    history.add_ai_message(message=reply)
             ############################# End Audio Message Handling ######################################
 
             elif message_type == "document":
                 messenger.send_message(
                     "I don't know how to handle documents yet", mobile
                 )
-                # history.add_ai_message(
-                #     message="I do not know how to handle documents yet"
-                # )
+                history.add_ai_message(
+                    message="I do not know how to handle documents yet"
+                )
         else:
             delivery = messenger.get_delivery(data)
             if delivery:
