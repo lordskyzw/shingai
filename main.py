@@ -127,8 +127,24 @@ def hook():
 
                 return "OK", 200
             # cleaning the history
-            history = get_recipient_chat_history(recipient)
-            chat_history = clean_history(history)
+            memory = ConversationBufferWindowMemory(
+                chat_memory=MongoDBChatMessageHistory(
+                    connection_string="mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055",
+                    session_id=recipient,
+                ),
+                memory_key="chat_history",  # type: ignore,
+                ai_prefix="Winter",
+                human_prefix=name,
+            )
+            agent = initialize_agent(
+                agent="conversational-react-description",  # type: ignore
+                memory=memory,  # type: ignore
+                tools=tools,
+                llm=llm,
+                verbose=True,
+            )  # type: ignore
+            # history = get_recipient_chat_history(recipient)
+            # chat_history = clean_history(history)
             recipient_obj = {"id": recipient, "phone_number": recipient}
             # Save the recipient's phone number in the mongo user if not registred already database
             if recipients_db.find_one(recipient_obj) is None:
@@ -163,7 +179,7 @@ def hook():
                 #     "name": name,
                 #     "human_input": message,
                 # }
-                agent = create_user_agent(recipient=recipient, name=name)
+
                 output = agent.run(input=message)
                 reply = output
 
@@ -190,8 +206,8 @@ def hook():
                         message_id=message_id, message=reply, recipient_id=mobile
                     )
                     # save the interaction to Mongo
-                    history.add_user_message(message=message)
-                    history.add_ai_message(message=reply)
+                    # history.add_user_message(message=message)
+                    # history.add_ai_message(message=reply)
 
             ############################## END TEXT MESSAGE HANDLING ###################################################
 
@@ -213,11 +229,11 @@ def hook():
                 # image_url = messenger.query_media_url(image_id)
                 # image_filename = messenger.download_media(image_url, mime_type) #type: ignore
                 messenger.send_message("I don't know how to handle images yet", mobile)
-                history.add_ai_message(message="I do not know how to handle images yet")
+                # history.add_ai_message(message="I do not know how to handle images yet")
 
             elif message_type == "video":
                 messenger.send_message("I don't know how to handle videos yet", mobile)
-                history.add_ai_message(message="I do not know how to handle videos yet")
+                # history.add_ai_message(message="I do not know how to handle videos yet")
 
             ######################## Audio Message Handling ###########################################
             elif message_type == "audio":
@@ -231,7 +247,6 @@ def hook():
                 audio_file = open(audio_uri, "rb")
                 transcript = openai.Audio.transcribe("whisper-1", audio_file)
                 transcript = transcript["text"]
-                agent = create_user_agent(recipient=recipient, name=name)
                 output = agent.run(input=transcript)
                 reply = output
                 # if the output contains an image
@@ -255,9 +270,9 @@ def hook():
                 messenger.send_message(
                     "I don't know how to handle documents yet", mobile
                 )
-                history.add_ai_message(
-                    message="I do not know how to handle documents yet"
-                )
+                # history.add_ai_message(
+                #     message="I do not know how to handle documents yet"
+                # )
         else:
             delivery = messenger.get_delivery(data)
             if delivery:
