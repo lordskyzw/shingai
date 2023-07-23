@@ -70,20 +70,23 @@ image_creation_tool = Tool(
 
 tools = [math_tool, search_tool, image_creation_tool, image_search_tool]
 
-memory = ConversationBufferWindowMemory(
-    chat_memory=MongoDBChatMessageHistory(
-        connection_string="mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055",
-        session_id="263778281345",
-    ),
-    memory_key="chat_history",  # type: ignore,
-    ai_prefix="Winter",
-    human_prefix="Tarmica",
-)
 
-agent = initialize_agent(
-    agent="conversational-react-description",  # type: ignore
-    memory=memory,  # type: ignore
-    tools=tools,
-    llm=llm,
-    verbose=True,
-)  # type: ignore
+def create_user_agent(recipient: str, name: str):
+    memory = ConversationBufferWindowMemory(
+        chat_memory=MongoDBChatMessageHistory(
+            connection_string="mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055",
+            session_id=recipient,
+        ),
+        memory_key="chat_history",  # type: ignore,
+        ai_prefix="Winter",
+        human_prefix=name,
+    )
+
+    agent = initialize_agent(
+        agent="conversational-react-description",  # type: ignore
+        memory=memory,  # type: ignore
+        tools=tools,
+        llm=llm,
+        verbose=True,
+    )  # type: ignore
+    return agent

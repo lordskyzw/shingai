@@ -147,7 +147,6 @@ def hook():
                 recipients_db.insert_one(recipient_obj)
 
             message_type = messenger.get_message_type(data)
-            time_stamp = messenger.get_message_timestamp(data)
             message_id = data["entry"][0]["changes"][0]["value"]["messages"][0]["id"]
 
             logging.info(
@@ -174,8 +173,9 @@ def hook():
                 #     "name": name,
                 #     "human_input": message,
                 # }
-                output = agent(message, return_only_outputs=True)
-                reply = output["output"]
+                agent = create_user_agent(recipient=recipient, name=name)
+                output = agent.run(input=message)
+                reply = output
 
                 reply_contains_image = re.findall(image_pattern, reply)
                 reply_without_links = re.sub(image_pattern, "", reply)
@@ -193,8 +193,7 @@ def hook():
                             caption=reply_without_links,
                             link=True,
                         )
-                        history.add_user_message(message=message)
-                        history.add_ai_message(message=reply)
+
                 else:
                     # send the reply
                     messenger.reply_to_message(
@@ -240,8 +239,9 @@ def hook():
                 audio_file = open(audio_uri, "rb")
                 transcript = openai.Audio.transcribe("whisper-1", audio_file)
                 transcript = transcript["text"]
-                output = agent(transcript, return_only_outputs=True)
-                reply = output["output"]
+                agent = create_user_agent(recipient=recipient, name=name)
+                output = agent.run(input=transcript)
+                reply = output
                 # if the output contains an image
                 reply_contains_image = re.findall(image_pattern, reply)
                 reply_without_links = re.sub(image_pattern, "", reply)
@@ -253,14 +253,10 @@ def hook():
                             caption=reply_without_links,
                             link=True,
                         )
-                        history.add_user_message(message=transcript)
-                        history.add_ai_message(message=reply)
                 else:
                     messenger.reply_to_message(
                         message_id=message_id, recipient_id=mobile, message=reply
                     )
-                    history.add_user_message(message=transcript)
-                    history.add_ai_message(message=reply)
             ############################# End Audio Message Handling ######################################
 
             ######################################## DOCUMENT HANDLING ##############################################################################
