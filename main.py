@@ -190,8 +190,8 @@ def hook():
                 #     "human_input": message,
                 # }
 
-                output = agent.run(input=message)
-                reply = output
+                output = agent(message)
+                reply = output["text"]
 
                 reply_contains_image = re.findall(image_pattern, reply)
                 reply_without_links = re.sub(image_pattern, "", reply)
