@@ -273,7 +273,7 @@ def hook():
                             caption=reply_without_links,
                             link=True,
                         )
-                        history.add_user_message(message=message)
+                        history.add_user_message(message=transcript)
                         history.add_ai_message(message=reply_without_links)
                 else:
                     # send the reply
@@ -281,7 +281,7 @@ def hook():
                         message_id=message_id, message=reply, recipient_id=mobile
                     )
                     # save the interaction to Mongo
-                    history.add_user_message(message=message)
+                    history.add_user_message(message=transcript)
                     history.add_ai_message(message=reply)
             ############################# End Audio Message Handling ######################################
 
