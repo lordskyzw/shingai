@@ -3,18 +3,21 @@ import re
 import openai
 from jobs.tools import *
 from flask import Flask, request, make_response
+import langchain
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.vectorstores import Pinecone
 from langchain.embeddings import OpenAIEmbeddings
-import pinecone
-import logging
 from labs.agentification import tools
 from langchain.agents import ZeroShotAgent, AgentExecutor
+from langchain.cache import InMemoryCache
+import pinecone
+import logging
 from heyoo import WhatsApp
 
 # setting up the llm, pineone object and embeddings model
 llm = ChatOpenAI(model="gpt-3.5-turbo")
+langchain.llm_cache = InMemoryCache()
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 pinecone.init(
     api_key=os.environ.get("PINECONE_API_KEY"),
@@ -49,6 +52,7 @@ How you behave:
 
 You have access to the following tools:"""
 suffix = """
+do not repeat the user's name. It's annoying.
 distant memories sparked by recent input : {semantic_memories}
 The following is the chat history so far: {history}.
 
@@ -158,14 +162,6 @@ def hook():
             if message_type == "text":
                 message = messenger.get_message(data)
 
-                # blue tick
-                try:
-                    mark_as_read_by_winter(message_id=message_id)
-                except Exception as e:
-                    logging.info(str(e))
-
-                logging.info("Message: %s", message)
-
                 # # get response from the llm
                 dic = {
                     "semantic_memories": str(
@@ -236,7 +232,6 @@ def hook():
 
             ######################## Audio Message Handling ###########################################
             elif message_type == "audio":
-                messenger.mark_as_read(message_id=message_id)
                 audio = messenger.get_audio(data=data)
                 audio_id, mime_type = audio["id"], audio["mime_type"]
                 audio_url = messenger.query_media_url(audio_id)

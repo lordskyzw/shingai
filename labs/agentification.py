@@ -13,7 +13,11 @@ from langchain.agents import initialize_agent
 class Artist:
     def paint(self, prompt: str):
         """this function returns the uuid of the generated image"""
-        response = openai.Image.create(prompt=prompt, n=1)
+        response = openai.Image.create(
+            prompt=prompt,
+            n=1,
+            size="512x512",
+        )
         return response["data"][0]["url"]
 
 
