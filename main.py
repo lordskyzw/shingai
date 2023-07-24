@@ -254,7 +254,7 @@ def hook():
                     "input": transcript,
                 }
 
-                output = agent.run(dic)
+                output = agent_executor.run(dic)
                 reply = output
                 # if the output contains an image
                 reply_contains_image = re.findall(image_pattern, reply)
