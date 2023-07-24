@@ -70,7 +70,10 @@ prompt = ZeroShotAgent.create_prompt(
 llm_chain = LLMChain(llm=ChatOpenAI(model="gpt-4", temperature=0.7), prompt=prompt)
 agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools)
 agent_executor = AgentExecutor.from_agent_and_tools(
-    agent=agent, tools=tools, verbose=True, handle_parsing_errors=True
+    agent=agent,
+    tools=tools,
+    verbose=True,
+    handle_parsing_errors="Check your output and make sure it conforms!",
 )
 #################################### End Prompt Engineering #####################################################
 
