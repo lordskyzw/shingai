@@ -134,8 +134,7 @@ def hook():
             message_type = messenger.get_message_type(data)
             recipient = "".join(filter(str.isdigit, mobile))
             message_id = messenger.get_message_id(data=data)
-            conversation_id = messenger.get_conversation_id(data=data)
-            message_stamp = conversation_id + message_id
+            message_stamp = message_id
             # check if message stamp already exists in db
             message_exists = check_id_database(message_stamp)
             if message_exists:
