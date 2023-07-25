@@ -6,3 +6,4 @@ pymongo
 pinecone-client
 tiktoken
 google-search-results
+colorama
