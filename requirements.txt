@@ -7,3 +7,4 @@ pinecone-client
 tiktoken
 google-search-results
 colorama
+requests-toolbelt==0.9.1
