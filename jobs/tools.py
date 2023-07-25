@@ -12,10 +12,10 @@ import logging
 import requests
 
 
-
 token = os.environ.get("WHATSAPP_ACCESS_TOKEN")
 phone_number_id = os.environ.get("PHONE_NUMBER_ID")
-v15_base_url = "https://graph.facebook.com/v15.0"
+v15_base_url = "https://graph.facebook.com/v17.0"
+
 
 ########################################  history retrieval functions  ########################################
 def get_recipient_chat_history(recipient):
@@ -72,8 +72,8 @@ def create_or_update_semantic_memories(recipient):
     embeddings = OpenAIEmbeddings() 
     # create vectorstore object
     vectorstore = Pinecone(
-        embeddings.embed_query, "text", index="thematrix", namespace=recipient
-    ) 
+        embeddings.embed_query, "text", index="thematrix", namespace=recipient  # type: ignore
+    )  # type: ignore
     vector_embeddings = [
         [0.2, 0.4, -0.1, 0.8, -0.5],
         [-0.3, 0.6, 0.9, -0.2, 0.1],
@@ -96,8 +96,8 @@ def get_semantic_memories(message, recipient):
     embeddings = OpenAIEmbeddings() 
     # create vectorstore object
     vectorstore = Pinecone(
-        embeddings.embed_query, "text", namespace=recipient
-    )
+        embeddings.embed_query, "text", index="thematrix", namespace=recipient  # type: ignore
+    )  # type: ignore
     # get semantic results
     try:
         semantic_results = vectorstore.similarity_search(
@@ -123,41 +123,70 @@ def summarize_memories(semantic_memories):
 #############################################################################################################################################
 ########################################### CUSTOM WINTER FUNCTIONS #########################################################################
 def mark_as_read_by_winter(message_id: str):
-        """
-        Marks a message as read
+    """
+    Marks a message as read
 
-        Args:
-            message_id[str]: Id of the message to be marked as read
+    Args:
+        message_id[str]: Id of the message to be marked as read
 
-        Returns:
-            Dict[Any, Any]: Response from the API
+    Returns:
+        Dict[Any, Any]: Response from the API
 
-        Example:
-            >>> from whatsapp import WhatsApp
-            >>> whatsapp = WhatsApp(token, phone_number_id)
-            >>> whatsapp.mark_as_read("message_id")
-        """
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        }
+    Example:
+        >>> from whatsapp import WhatsApp
+        >>> whatsapp = WhatsApp(token, phone_number_id)
+        >>> whatsapp.mark_as_read("message_id")
+    """
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
 
-        json_data = {
-            "messaging_product": "whatsapp",
-            "status": "read",
-            "message_id": message_id,
-        }
-        logging.info(f"Marking message {message_id} as read")
-        requests.post(
-            f"{v15_base_url}/{phone_number_id}/messages",
-            headers=headers,
-            json=json_data,
-        ).json()
-
-        return "OK", 200
+    json_data = {
+        "messaging_product": "whatsapp",
+        "status": "read",
+        "message_id": message_id,
+    }
+    logging.info(f"Marking message {message_id} as read")
+    requests.post(
+        f"{v15_base_url}/{phone_number_id}/messages",
+        headers=headers,
+        json=json_data,
+    ).json()
 
 
-def transcribe_audio(audio):
-    transcription = openai.Audio.transcribe("whisper-1", audio)
-    return transcription
+def check_id_database(message_stamp: str):
+    """Check if a message_stamp(combination of conersation_id+message_id) is in the database or not."""
+    # users' database connection object
+    client = MongoClient(
+        "mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055"
+    )
+    database = client["Readit"]
+    collection = database["messageids"]
 
+    # Query the collection to check if the message_id exists
+    query = {"message_stamp": message_stamp}
+    result = collection.find_one(query)
+
+    # Close the database connection
+    client.close()
+
+    # If the result is not None, the message_id exists in the database
+    return result is not None
+
+
+def add_id_to_database(message_stamp: str):
+    """Add a message_stamp to the database."""
+    # users' database connection object
+    client = MongoClient(
+        "mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055"
+    )
+    database = client["Readit"]
+    collection = database["messageids"]
+
+    # Create a document with the message_stamp and insert it into the collection
+    document = {"message_stamp": message_stamp}
+    collection.insert_one(document)
+
+    # Close the database connection
+    client.close()

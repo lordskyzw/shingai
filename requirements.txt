@@ -4,6 +4,5 @@ openai
 langchain==0.0.240
 pymongo
 pinecone-client
-heyoo
 tiktoken
 google-search-results
