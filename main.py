@@ -146,7 +146,6 @@ def hook():
                 # implement whitelist
                 if recipient not in whitelist:
                     message = messenger.get_message(data)
-                    mark_as_read_by_winter(message_id=message_id)
                     messenger.reply_to_message(
                         message_id=message_id,
                         message="Winter is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw",
@@ -176,7 +175,7 @@ def hook():
 
                 ############################################### Text Message Handling ##########################################################
                 if message_type == "text":
-                    messenger.mark_as_read(message_id=message_id)
+                    messenger.mark_as_read_by_winter(message_id=message_id)
                     message = messenger.get_message(data)
 
                     # # get response from the llm
@@ -259,6 +258,7 @@ def hook():
                 elif message_type == "audio":
                     audio = messenger.get_audio(data=data)
                     audio_id, mime_type = audio["id"], audio["mime_type"]
+                    messenger.mark_as_read_by_winter(message_id=message_id)
                     audio_url = messenger.query_media_url(audio_id)
                     audio_uri = messenger.download_media(
                         media_url=audio_url, mime_type="audio/ogg"

@@ -592,6 +592,38 @@ class WhatsApp(object):
         logging.info(f"Response: {response.json()}")
         return response
 
+    def mark_as_read_by_winter(self, message_id: str):
+        """
+        Marks a message as read
+
+        Args:
+            message_id[str]: Id of the message to be marked as read
+
+        Returns:
+            Dict[Any, Any]: Response from the API
+
+        Example:
+            >>> from whatsapp import WhatsApp
+            >>> whatsapp = WhatsApp(token, phone_number_id)
+            >>> whatsapp.mark_as_read("message_id")
+        """
+        headers = {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json",
+        }
+
+        json_data = {
+            "messaging_product": "whatsapp",
+            "status": "read",
+            "message_id": message_id,
+        }
+        logging.info(f"Marking message {message_id} as read")
+        requests.post(
+            f"{self.v15_base_url}/{self.phone_number_id}/messages",
+            headers=headers,
+            json=json_data,
+        ).json()
+
     def create_button(self, button: Dict[Any, Any]) -> Dict[Any, Any]:
         """
         Method to create a button object to be used in the send_message method.
