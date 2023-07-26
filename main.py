@@ -86,7 +86,7 @@ messenger = WhatsApp(
     phone_number_id=os.environ.get("PHONE_NUMBER_ID"),
 )
 VERIFY_TOKEN = "30cca545-3838-48b2-80a7-9e43b1ae8ce4"
-whitelist = ["263779281345", "263779293593", "263782835933"]
+whitelist = ["263779281345", "263779293593", "263782835933", "263771229658"]
 
 app = Flask(__name__)
 
