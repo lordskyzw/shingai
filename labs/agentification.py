@@ -1,13 +1,10 @@
 import os
-from langchain.llms import OpenAI
 import openai
 import requests
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMMathChain
 from langchain.agents import Tool
 from langchain.utilities import SerpAPIWrapper
-from langchain.memory import ConversationBufferWindowMemory, MongoDBChatMessageHistory
-from langchain.agents import initialize_agent
 
 
 class Artist:
@@ -31,6 +28,14 @@ class WebGallery:
         response = requests.get(self.base_url, params=parameters)
         response = response.json()
         return response["images_results"][0]["original"]
+
+
+class GraphicDesigner:
+    """this class implements a designer API"""
+
+
+class DocumentWriter:
+    """this class writes/edits documents"""
 
 
 llm = ChatOpenAI(
@@ -73,24 +78,3 @@ image_creation_tool = Tool(
 
 
 tools = [math_tool, search_tool, image_creation_tool, image_search_tool]
-
-
-def create_user_agent(recipient: str, name: str):
-    memory = ConversationBufferWindowMemory(
-        chat_memory=MongoDBChatMessageHistory(
-            connection_string="mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055",
-            session_id=recipient,
-        ),
-        memory_key="chat_history",  # type: ignore,
-        ai_prefix="Winter",
-        human_prefix=name,
-    )
-
-    agent = initialize_agent(
-        agent="conversational-react-description",  # type: ignore
-        memory=memory,  # type: ignore
-        tools=tools,
-        llm=llm,
-        verbose=True,
-    )  # type: ignore
-    return agent
