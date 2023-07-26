@@ -16,7 +16,7 @@ import logging
 from szn import WhatsApp
 
 # setting up the llm, pineone object and embeddings model
-llm = ChatOpenAI(model="gpt-3.5-turbo")
+llm = ChatOpenAI(model="gpt-4")
 langchain.llm_cache = InMemoryCache()
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 pinecone.init(
@@ -86,7 +86,7 @@ messenger = WhatsApp(
     phone_number_id=os.environ.get("PHONE_NUMBER_ID"),
 )
 VERIFY_TOKEN = "30cca545-3838-48b2-80a7-9e43b1ae8ce4"
-whitelist = ["263779281345", "263779293593"]
+whitelist = ["263779281345", "263779293593", "263782835933"]
 
 app = Flask(__name__)
 
