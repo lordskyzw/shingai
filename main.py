@@ -202,12 +202,13 @@ def hook():
                         reply_without_links = reply_without_links.strip()
                     if reply_contains_image:
                         for image_url in reply_contains_image:
-                            messenger.send_image(
+                            response = messenger.send_image(
                                 image=image_url,
                                 recipient_id=recipient,
                                 caption=reply_without_links,
                                 link=True,
                             )
+
                             history.add_user_message(message=message)
                             history.add_ai_message(message=reply_without_links)
                     else:
