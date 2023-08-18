@@ -13,7 +13,7 @@ from langchain.agents import ZeroShotAgent, AgentExecutor
 from langchain.cache import InMemoryCache
 import pinecone
 import logging
-from szn import WhatsApp
+from pygwan import WhatsApp
 
 # setting up the llm, pineone object and embeddings model
 llm = ChatOpenAI(model="gpt-4")
