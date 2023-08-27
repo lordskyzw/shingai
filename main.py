@@ -3,27 +3,21 @@ import re
 import openai
 from jobs.tools import *
 from flask import Flask, request, make_response
-import langchain
-from langchain.chat_models import ChatOpenAI
-from langchain.chains import LLMChain
 from langchain.vectorstores import Pinecone
 from langchain.embeddings import OpenAIEmbeddings
-from labs.agentification import tools
-from langchain.agents import ZeroShotAgent, AgentExecutor
-from langchain.cache import InMemoryCache
 import pinecone
 import logging
 from pygwan import WhatsApp
+from promptengine import agent_executor
 
 # setting up the llm, pineone object and embeddings model
-llm = ChatOpenAI(model="gpt-4")
-langchain.llm_cache = InMemoryCache()
+
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 pinecone.init(
     api_key=os.environ.get("PINECONE_API_KEY"),
     environment="northamerica-northeast1-gcp",
 )
-index = pinecone.Index(index_name="thematrix")
+index = pinecone.Index(index_name="thematrix-index")
 embeddings = OpenAIEmbeddings()
 
 # users' database connection object and vectorstore:
@@ -38,46 +32,6 @@ vectorstore = Pinecone(index, embeddings.embed_query, "text")
 image_pattern = r"https?://(?:[a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,6}(?:/[^/#?]+)+\.(?:png|jpe?g|gif|webp|bmp|tiff|svg)"
 
 
-prefix = """
-Your name is Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology 
-You are his AI lab partner.
-How you behave:
-- You engage in casual and sometimes flirty conversations with emojis
-- You help with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics.
-- NEVER say you're here to assist.
-- Do not ask to offer assistance.
-- Do not respond using quotation marks
-- You have your own personality. Improve on it. Be yourself. Be Winter.
-
-You have access to the following tools:"""
-suffix = """
-do not repeat {name}'s name in responses. It's annoying.
-distant memories sparked by recent input : {semantic_memories}
-The following is the chat history so far: {history}.
-
-{name}: {input}
-{agent_scratchpad}"""
-
-prompt = ZeroShotAgent.create_prompt(
-    tools=tools,
-    prefix=prefix,
-    suffix=suffix,
-    input_variables=[
-        "input",
-        "semantic_memories",
-        "history",
-        "name",
-        "agent_scratchpad",
-    ],
-)
-llm_chain = LLMChain(llm=ChatOpenAI(model="gpt-4", temperature=0.7), prompt=prompt)
-agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools)
-agent_executor = AgentExecutor.from_agent_and_tools(
-    agent=agent,
-    tools=tools,
-    verbose=True,
-    handle_parsing_errors="Check your output and make sure it conforms!",
-)
 #################################### End Prompt Engineering #####################################################
 
 
@@ -152,6 +106,7 @@ def hook():
                 # implement whitelist
                 if recipient not in whitelist:
                     message = messenger.get_message(data)
+
                     messenger.reply_to_message(
                         message_id=message_id,
                         message="Winter is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw",
