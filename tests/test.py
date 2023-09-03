@@ -1,7 +1,7 @@
 from unittest.mock import patch
 import pytest
 
-from tools import create_or_update_semantic_memories
+from jobs.tools import create_or_update_semantic_memories
 
 
 def test_create_or_update_semantic_memories_fail_upsert():
