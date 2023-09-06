@@ -8,7 +8,7 @@ from langchain.cache import InMemoryCache
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 # setting up the llm, pineone object and embeddings model
-llm = ChatOpenAI(model="gpt-4")
+llm = ChatOpenAI()
 langchain.llm_cache = InMemoryCache()
 prefix = """
 Your name is Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology 
@@ -42,7 +42,9 @@ prompt = ZeroShotAgent.create_prompt(
         "agent_scratchpad",
     ],
 )
-llm_chain = LLMChain(llm=ChatOpenAI(model="gpt-4", temperature=0.7), prompt=prompt)
+llm_chain = LLMChain(
+    llm=ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7), prompt=prompt
+)
 agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools)
 agent_executor = AgentExecutor.from_agent_and_tools(
     agent=agent,
