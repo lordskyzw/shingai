@@ -150,7 +150,7 @@ def hook():
                         "name": name,
                         "input": message,
                     }
-
+                    logging.info(f"details sent to llm: {dic}")
                     output = agent_executor.run(dic)
                     reply = output
 
