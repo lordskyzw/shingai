@@ -116,7 +116,7 @@ def get_recipient_chat_history(recipient):
 
 def clean_history(history):
     """does string operations to clean the history therefore reducing the size of the prompt sent to the llm"""
-    clean_history = str(history.messages[-8:]).replace(
+    clean_history = str(history.messages[-4:]).replace(
         ", additional_kwargs={}, example=False", ""
     )
     clean_history = clean_history.replace("content=", "")
@@ -201,41 +201,6 @@ def summarize_memories(semantic_memories):
                             
                             {semantic_memories}""",
     )
-
-
-#############################################################################################################################################
-########################################### CUSTOM WINTER FUNCTIONS #########################################################################
-def mark_as_read_by_winter(message_id: str):
-    """
-    Marks a message as read
-
-    Args:
-        message_id[str]: Id of the message to be marked as read
-
-    Returns:
-        Dict[Any, Any]: Response from the API
-
-    Example:
-        >>> from whatsapp import WhatsApp
-        >>> whatsapp = WhatsApp(token, phone_number_id)
-        >>> whatsapp.mark_as_read("message_id")
-    """
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
-    }
-
-    json_data = {
-        "messaging_product": "whatsapp",
-        "status": "read",
-        "message_id": message_id,
-    }
-    logging.info(f"Marking message {message_id} as read")
-    requests.post(
-        f"{v15_base_url}/{phone_number_id}/messages",
-        headers=headers,
-        json=json_data,
-    ).json()
 
 
 def check_id_database(message_stamp: str):
