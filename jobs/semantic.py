@@ -10,7 +10,7 @@ import pinecone
 ##########################       STEP ONE          ####################################
 ########### Retrieve recipient phone numbers from MongoDB and add them to a list
 client = MongoClient(
-    "mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055"
+    "mongodb://mongo:xQxzXZEzUilnKKhrbELE@containers-us-west-114.railway.app:6200"
 )
 database = client["users"]
 collection = database["recipients"]
@@ -25,9 +25,9 @@ phone_numbers = list(phone_numbers)
 
 ########################        STEP TWO            ################################
 # setting up the vectorstore
-embeddings = OpenAIEmbeddings() # type: ignore
+embeddings = OpenAIEmbeddings()  # type: ignore
 pinecone.init(
-    api_key=os.environ.get("PINECONE_API_KEY"), # type: ignore
+    api_key=os.environ.get("PINECONE_API_KEY"),  # type: ignore
     environment="northamerica-northeast1-gcp",
 )
 index = pinecone.Index(index_name="thematrix")
@@ -37,7 +37,7 @@ vectorstore = Pinecone(index, embeddings.embed_query, "text")
 # upsert everyones vector embeddings
 for phone_number in phone_numbers:
     history = MongoDBChatMessageHistory(
-        connection_string="mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055",
+        connection_string="mongodb://mongo:xQxzXZEzUilnKKhrbELE@containers-us-west-114.railway.app:6200",
         session_id=phone_number,
         database_name="test",
         collection_name="message_store",

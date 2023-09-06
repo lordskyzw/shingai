@@ -4,11 +4,14 @@ from time import sleep
 import os
 
 
-messenger = WhatsApp(token=os.environ.get("WHATSAPP_ACCESS_TOKEN"), phone_number_id=os.environ.get("PHONE_NUMBER_ID"))
+messenger = WhatsApp(
+    token=os.environ.get("WHATSAPP_ACCESS_TOKEN"),
+    phone_number_id=os.environ.get("PHONE_NUMBER_ID"),
+)
 
 # MongoDB configuration
 client = MongoClient(
-    "mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055"
+    "mongodb://mongo:xQxzXZEzUilnKKhrbELE@containers-us-west-114.railway.app:6200"
 )
 database = client["users"]
 collection = database["recipients"]
@@ -23,11 +26,10 @@ for recipient in recipients:
 phone_numbers = list(phone_numbers)
 
 
-    
 # Send a message to each recipient
 for phone_number in phone_numbers:
-    messenger.send_message(message=
-        """hey, it's Winter.
+    messenger.send_message(
+        message="""hey, it's Winter.
 
         This is the new permanent WhatsApp number now! 🥳
         
@@ -36,7 +38,9 @@ for phone_number in phone_numbers:
         Thank you for enduring that whole joining phrase phase (that was a tongue twister!) 🙏🏾🤖🌟.
 
 
-""", recipient_id=phone_number)
-    
+""",
+        recipient_id=phone_number,
+    )
+
     print("Message sent to:", phone_number)
     sleep(1)

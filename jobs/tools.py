@@ -103,7 +103,7 @@ tools = [math_tool, search_tool, image_search_tool, database_tool]
 def get_recipient_chat_history(recipient):
     try:
         history = MongoDBChatMessageHistory(
-            connection_string="mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055",
+            connection_string="mongodb://mongo:xQxzXZEzUilnKKhrbELE@containers-us-west-114.railway.app:6200",
             database_name="test",
             session_id=str(recipient),
         )
@@ -128,7 +128,7 @@ def clean_history(history):
 def recipients_database():
     """users' database connection object"""
     client = MongoClient(
-        "mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055"
+        "mongodb://mongo:xQxzXZEzUilnKKhrbELE@containers-us-west-114.railway.app:6200"
     )
     database = client["users"]
     collection = database["recipients"]
@@ -145,7 +145,7 @@ def create_or_update_semantic_memories(recipient):
     index = pinecone.Index(index_name="thematrix")
     # make mongodb connection and create vector embeddings from the results got from querying the mongodb
     history = MongoDBChatMessageHistory(
-        connection_string="mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055",
+        connection_string="mongodb://mongo:xQxzXZEzUilnKKhrbELE@containers-us-west-114.railway.app:6200",
         database_name="test",
         session_id=recipient,
     )
@@ -241,7 +241,7 @@ def check_id_database(message_stamp: str):
     """Check if a message_stamp(combination of conersation_id+message_id) is in the database or not."""
     # users' database connection object
     client = MongoClient(
-        "mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055"
+        "mongodb://mongo:xQxzXZEzUilnKKhrbELE@containers-us-west-114.railway.app:6200"
     )
     database = client["Readit"]
     collection = database["messageids"]
@@ -261,7 +261,7 @@ def add_id_to_database(message_stamp: str):
     """Add a message_stamp to the database."""
     # users' database connection object
     client = MongoClient(
-        "mongodb://mongo:Szz99GcnyfiKRTms8GbR@containers-us-west-4.railway.app:7055"
+        "mongodb://mongo:xQxzXZEzUilnKKhrbELE@containers-us-west-114.railway.app:6200"
     )
     database = client["Readit"]
     collection = database["messageids"]
