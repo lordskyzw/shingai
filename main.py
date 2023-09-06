@@ -136,7 +136,7 @@ def hook():
 
                 ############################################### Text Message Handling ##########################################################
                 if message_type == "text":
-                    messenger.mark_as_read_by_winter(message_id=message_id)
+                    messenger.mark_as_read(message_id=message_id)
                     message = messenger.get_message(data)
 
                     # # get response from the llm
