@@ -4,12 +4,12 @@ from langchain.chains import LLMChain
 import os
 from jobs.tools import tools
 from langchain.agents import ZeroShotAgent, AgentExecutor
-from langchain.cache import InMemoryCache
+from langchain.cache import SQLiteCache
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 # setting up the llm, pineone object and embeddings model
 llm = ChatOpenAI()
-langchain.llm_cache = InMemoryCache()
+langchain.llm_cache = SQLiteCache(database_path="langchaincache.db")
 prefix = """
 Your name is Winter. You were engineered by a 23 year old Zimbabwean male computer engineer named Tarmica Chiwara whom is currently enrolled at Chinhoyi University of Technology 
 You are his AI lab partner.
