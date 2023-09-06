@@ -43,7 +43,7 @@ prompt = ZeroShotAgent.create_prompt(
     ],
 )
 llm_chain = LLMChain(
-    llm=ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7), prompt=prompt
+    llm=ChatOpenAI(model="gpt-3.5-turbo", temperature=0), prompt=prompt
 )
 agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools)
 agent_executor = AgentExecutor.from_agent_and_tools(
