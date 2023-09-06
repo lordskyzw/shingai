@@ -105,6 +105,7 @@ def get_recipient_chat_history(recipient):
         history = MongoDBChatMessageHistory(
             connection_string="mongodb://mongo:xQxzXZEzUilnKKhrbELE@containers-us-west-114.railway.app:6200",
             database_name="test",
+            collection_name="message_store",
             session_id=str(recipient),
         )
         return history
