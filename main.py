@@ -98,7 +98,7 @@ def hook():
             # check if message stamp already exists in db
             message_exists = check_id_database(message_stamp)
             if message_exists:
-                logging.info(f"message already in database, exiting the webhook")
+                logging.warning(f"message already in database, exiting the webhook")
                 return "OK", 200
             elif not message_exists:
                 # add message stamp to database
@@ -106,14 +106,13 @@ def hook():
                 # implement whitelist
                 if recipient not in whitelist:
                     message = messenger.get_message(data)
-
                     messenger.reply_to_message(
                         message_id=message_id,
                         message="Winter is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw",
                         recipient_id=mobile,
                     )
                     logging.info(
-                        f"New Message; sender:{mobile} name:{name} message:{message}"
+                        f"New Message; from sender:{mobile} name:{name} message:{message}"
                     )
 
                     return "OK", 200
@@ -131,7 +130,7 @@ def hook():
                 ]
 
                 logging.info(
-                    f"New Message; sender:{mobile} name:{name} type:{message_type}"
+                    f"New Message; from sender:{mobile} name:{name} type:{message_type}"
                 )
 
                 ############################################### Text Message Handling ##########################################################
@@ -150,7 +149,7 @@ def hook():
                         "name": name,
                         "input": message,
                     }
-                    logging.info(f"details sent to llm: {dic}")
+                    logging.info(f"DATA SENT TO AGENT: {dic}")
                     output = agent_executor.run(dic)
                     reply = output
 

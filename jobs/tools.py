@@ -3,7 +3,6 @@ import requests
 from time import sleep
 import openai
 import pinecone
-import logging
 from langchain.memory import MongoDBChatMessageHistory
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
