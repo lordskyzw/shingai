@@ -1,5 +1,6 @@
 import os
 import requests
+import tweepy
 from time import sleep
 import openai
 import pinecone
@@ -18,6 +19,36 @@ from sqlchain import db_chain
 token = os.environ.get("WHATSAPP_ACCESS_TOKEN")
 phone_number_id = os.environ.get("PHONE_NUMBER_ID")
 v15_base_url = "https://graph.facebook.com/v17.0"
+
+
+class ChiefTwit(tweepy):
+    def __init__(self):
+        self.consumer_key = os.environ.get("twitter_consumer_key")
+        self.consumer_secret = os.environ.get("twitter_consumer_secret")
+        self.access_token = os.environ.get("twitter_access_token")
+        self.access_token_secret = os.environ.get("twitter_access_token_secret")
+        self.client = tweepy.Client(
+            consumer_key=self.consumer_key,
+            consumer_secret=self.consumer_secret,
+            access_token=self.access_token,
+            access_token_secret=self.access_token_secret,
+        )
+
+    def write_tweet(self, text):
+        """use when you need to write/send/make a tweet"""
+        self.client.create_tweet(text=text)
+
+    def get_tweets(self, username):
+        self.client.get_user(username)
+
+    def get_followers(self, username):
+        self.client.get_followers(username)
+
+    def get_following(self, username):
+        self.client.get_following(username)
+
+    def get_user(self, username):
+        self.client.get_user(username)
 
 
 class Artist:
@@ -57,7 +88,7 @@ llm = ChatOpenAI(
     model_name="gpt-4",  # type: ignore
 )  # type: ignore
 
-
+tweet = ChiefTwit()
 search = SerpAPIWrapper(serpapi_api_key=os.environ.get("SERP_API_KEY"))  # type: ignore
 artist = Artist()
 llm_math = LLMMathChain.from_llm(llm=llm)
@@ -65,6 +96,12 @@ image_search = WebGallery()
 
 
 # intitialize the math tool
+tweet_tool = Tool(
+    name="Tweet Writer",
+    func=tweet.write_tweet,
+    description="useful for when you need to write/make/publish text based tweets",
+)
+
 math_tool = Tool(
     name="Calculator",
     func=llm_math.run,
@@ -95,7 +132,7 @@ database_tool = Tool(
     description="useful for when you need to search through Kimtronix catalogue and return answers on what Kimtronix offers",
 )
 
-tools = [math_tool, search_tool, image_search_tool, database_tool]
+tools = [math_tool, search_tool, image_search_tool, database_tool, tweet_tool]
 
 
 ########################################  history retrieval functions  ########################################
