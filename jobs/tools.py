@@ -1,6 +1,6 @@
 import os
 import requests
-import tweepy
+from tweepy import Client
 from time import sleep
 import openai
 import pinecone
@@ -21,13 +21,13 @@ phone_number_id = os.environ.get("PHONE_NUMBER_ID")
 v15_base_url = "https://graph.facebook.com/v17.0"
 
 
-class ChiefTwit(tweepy):
+class ChiefTwit(Client):
     def __init__(self):
         self.consumer_key = os.environ.get("twitter_consumer_key")
         self.consumer_secret = os.environ.get("twitter_consumer_secret")
         self.access_token = os.environ.get("twitter_access_token")
         self.access_token_secret = os.environ.get("twitter_access_token_secret")
-        self.client = tweepy.Client(
+        self.client = Client(
             consumer_key=self.consumer_key,
             consumer_secret=self.consumer_secret,
             access_token=self.access_token,
