@@ -8,7 +8,7 @@ tiktoken
 google-search-results
 colorama==0.4.4
 requests==2.26.0
-requests-toolbelt==0.9.1
+requests-toolbelt==1.0.0
 urllib3==1.26.6
 pygwan
 tweepy
