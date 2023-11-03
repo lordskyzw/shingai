@@ -106,11 +106,7 @@ def hook():
                 # implement whitelist
                 if recipient not in whitelist:
                     message = messenger.get_message(data)
-                    messenger.reply_to_message(
-                        message_id=message_id,
-                        message="Rogue is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw",
-                        recipient_id=mobile,
-                    )
+                    messenger.send_template(template='heralding_rogue', recipient_id=recipient_id, lang='en')
                     logging.info(
                         f"New Message; from sender:{mobile} name:{name} message:{message}"
                     )
