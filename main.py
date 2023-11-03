@@ -108,7 +108,7 @@ def hook():
                     message = messenger.get_message(data)
                     messenger.reply_to_message(
                         message_id=message_id,
-                        message="Winter is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw",
+                        message="Rogue is currently not available to the public. Contact Tarmica at +263779281345 or https://github.com/lordskyzw",
                         recipient_id=mobile,
                     )
                     logging.info(
