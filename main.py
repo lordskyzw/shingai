@@ -17,7 +17,7 @@ pinecone.init(
     api_key=os.environ.get("PINECONE_API_KEY"),
     environment="northamerica-northeast1-gcp",
 )
-index = pinecone.Index(index_name="thematrix-index")
+index = pinecone.Index(index_name="thematrix")
 embeddings = OpenAIEmbeddings()
 
 # users' database connection object and vectorstore:
