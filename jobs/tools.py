@@ -15,6 +15,7 @@ from langchain.agents import Tool
 from langchain.utilities import SerpAPIWrapper
 from pymongo import MongoClient
 from sqlchain import db_chain
+import paynow
 
 token = os.environ.get("WHATSAPP_ACCESS_TOKEN")
 phone_number_id = os.environ.get("PHONE_NUMBER_ID")
@@ -74,6 +75,25 @@ class WebGallery:
         return response["images_results"][0]["original"]
 
 
+class Brucewayne(paynow.Paynow):
+    def __init__(self, integration_id, integration_key, return_url, response_url):
+        super().__init__(integration_id, integration_key, return_url, response_url)
+
+    def initiate_transaction(self, phone_number, payment_method):
+        payment = self.create_payment('Order', 'tarimicac@gmail.com')
+        payment.add('Payment for stuff', 1)
+        response = self.send_mobile(payment, phone_number, payment_method)
+        return response
+
+
+def initiate_transaction_tool(phone_number: str, payment_method: str):
+    brucewayne = Brucewayne('16678', 'e764eb71-d4e9-4530-8a4b-ce5d0c3e3a8f', 'http://google.com', 'http://google.com')
+    response = brucewayne.initiate_transaction(phone_number, payment_method)
+    return response
+
+
+
+
 class GraphicDesigner:
     """this class implements a designer API"""
 
@@ -100,6 +120,12 @@ tweet_tool = Tool(
     name="Tweet Writer",
     func=tweet.write_tweet,
     description="useful for when you need to write/make/publish text based tweets",
+)
+
+dstv_transaction_tool = Tool(
+    name="DstvTransactionAgent",
+    func=initiate_transaction_tool,
+    description="useful for when you need to initiate a payment transaction. You need phone number and method of paymment(ecocash or onemoney)",
 )
 
 math_tool = Tool(
@@ -132,7 +158,7 @@ database_tool = Tool(
     description="useful for when you need to search through Kimtronix catalogue and return answers on what Kimtronix offers",
 )
 
-tools = [math_tool, search_tool, image_search_tool, database_tool, tweet_tool]
+tools = [math_tool, search_tool, image_search_tool, dstv_transaction_tool, tweet_tool]
 
 
 ########################################  history retrieval functions  ########################################
