@@ -86,9 +86,9 @@ class Brucewayne(paynow.Paynow):
         return response
 
 
-def initiate_transaction_tool(phone_number: str, payment_method: str):
+def initiate_transaction_tool(phone_number: str):
     brucewayne = Brucewayne('16678', 'e764eb71-d4e9-4530-8a4b-ce5d0c3e3a8f', 'http://google.com', 'http://google.com')
-    response = brucewayne.initiate_transaction(phone_number, payment_method)
+    response = brucewayne.initiate_transaction(phone_number, 'ecocash')
     return response
 
 
