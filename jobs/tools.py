@@ -105,7 +105,7 @@ class DocumentWriter:
 llm = ChatOpenAI(
     openai_api_key=os.environ.get("OPENAI_API_KEY"),
     temperature=0,
-    model_name="gpt-4",  # type: ignore
+    model_name="gpt-4-1106-preview",  # type: ignore
 )  # type: ignore
 
 tweet = ChiefTwit()
@@ -300,3 +300,26 @@ def add_id_to_database(message_stamp: str):
 
     # Close the database connection
     client.close()
+
+
+def analyze_image(image_url, instruction):
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+    response = client.chat.completions.create(
+        model="gpt-4-vision-preview",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": instruction},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": image_url},
+                    },
+                ],
+            }
+        ],
+        max_tokens=300,
+    )
+
+    return response.choices[0].message.content

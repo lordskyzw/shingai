@@ -44,7 +44,7 @@ prompt = ZeroShotAgent.create_prompt(
         "agent_scratchpad",
     ],
 )
-llm_chain = LLMChain(llm=ChatOpenAI(model="gpt-4", temperature=0), prompt=prompt)
+llm_chain = LLMChain(llm=ChatOpenAI(model="gpt-4-1106-preview", temperature=0), prompt=prompt)
 agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools)
 agent_executor = AgentExecutor.from_agent_and_tools(
     agent=agent,

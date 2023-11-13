@@ -106,7 +106,7 @@ def hook():
                 # implement whitelist
                 if recipient not in whitelist:
                     message = messenger.get_message(data)
-                    messenger.send_template(template='heralding_rogue', recipient_id=recipient_id, lang='en')
+                    messenger.send_template(template='heralding_rogue', recipient_id=recipient, lang='en')
                     logging.info(
                         f"New Message; from sender:{mobile} name:{name} message:{message}"
                     )
@@ -192,12 +192,13 @@ def hook():
 
                 ###### This part is very important if the AI is to be able to manage media files
                 elif message_type == "image":
-                    # image = messenger.get_image(data)
-                    # image_id, mime_type = image["id"], image["mime_type"] #type: ignore
-                    # image_url = messenger.query_media_url(image_id)
-                    # image_filename = messenger.download_media(image_url, mime_type) #type: ignore
+                    image = messenger.get_image(data)
+                    caption = messenger.get_media_caption(data=data)
+                    image_id, mime_type = image["id"], image["mime_type"] #type: ignore
+                    image_url = messenger.query_media_url(image_id)
+                    response = analyze_image(image_url=image_url, instruction=caption)
                     messenger.send_message(
-                        "I don't know how to handle images yet", mobile
+                        response, mobile
                     )
                     history.add_ai_message(
                         message="I do not know how to handle images yet"

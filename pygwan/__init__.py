@@ -933,6 +933,23 @@ class WhatsApp(object):
         if "messages" in data:
             if "location" in data["messages"][0]:
                 return data["messages"][0]["location"]
+            
+    def get_media_caption(self, data: Dict[Any, Any]) -> Union[str, None]:
+        """
+        Extracts the caption of a media message from the data received from the webhook.
+
+        Args:
+            data[dict]: The data received from the webhook
+
+        Returns:
+            str: The caption of the media message, if present; None otherwise
+        """
+        data = self.preprocess(data)
+        if "messages" in data and "media" in data["messages"][0]:
+            media_message = data["messages"][0]["media"]
+            return media_message.get("caption")
+        
+        return None
 
     def get_image(self, data: Dict[Any, Any]) -> Union[Dict, None]:
         """ "
