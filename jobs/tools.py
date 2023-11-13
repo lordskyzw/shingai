@@ -3,6 +3,7 @@ import requests
 from tweepy import Client
 from time import sleep
 import openai
+from openai import OpenAI
 import pinecone
 from langchain.memory import MongoDBChatMessageHistory
 from langchain.embeddings import OpenAIEmbeddings
@@ -303,8 +304,7 @@ def add_id_to_database(message_stamp: str):
 
 
 def analyze_image(image_url, instruction):
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
+    client = OpenAI(openai_api_key=str(os.environ.get("OPENAI_API_KEY")))
     response = client.chat.completions.create(
         model="gpt-4-vision-preview",
         messages=[
