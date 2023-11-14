@@ -316,8 +316,8 @@ def analyze_image(image_path, instruction):
 
     
     base64_image = encode_image(image_path)
-
-    response = oai.chat.completions.create(
+    client = oai(api_key=str(os.environ.get("OPENAI_API_KEY")))
+    response = client.chat.completions.create(
         model="gpt-4-vision-preview",
         messages=[
             {
