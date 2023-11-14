@@ -324,7 +324,7 @@ def analyze_image(image_path, instruction):
                 "role": "user",
                 "content": {
                     "type": "text",
-                    "text": instruction
+                    "text": str(instruction)
                 },
             },
             {
