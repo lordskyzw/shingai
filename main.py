@@ -192,16 +192,16 @@ def hook():
 
                 ###### This part is very important if the AI is to be able to manage media files
                 elif message_type == "image":
+                    messenger.mark_as_read(message_id=message_id)
                     image = messenger.get_image(data)
                     caption = messenger.get_media_caption(data=data)
                     image_id, mime_type = image["id"], image["mime_type"] #type: ignore
                     image_url = messenger.query_media_url(image_id)
                     response = analyze_image(image_url=image_url, instruction=caption)
-                    messenger.send_message(
-                        response, mobile
-                    )
+                    messenger.reply_to_message(message_id=message_id, recipient_id=recipient, message=response)
+                    history.add_user_message(message=caption)
                     history.add_ai_message(
-                        message="I do not know how to handle images yet"
+                        message=response
                     )
 
                 elif message_type == "video":
