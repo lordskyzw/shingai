@@ -3,7 +3,7 @@ import requests
 from tweepy import Client
 from time import sleep
 import openai
-from openai import OpenAI
+from openai import OpenAI as oai
 import pinecone
 from langchain.memory import MongoDBChatMessageHistory
 from langchain.embeddings import OpenAIEmbeddings
@@ -21,6 +21,7 @@ import paynow
 token = os.environ.get("WHATSAPP_ACCESS_TOKEN")
 phone_number_id = os.environ.get("PHONE_NUMBER_ID")
 v15_base_url = "https://graph.facebook.com/v17.0"
+openai_api_key = str(os.environ.get("OPENAI_API_KEY"))
 
 
 class ChiefTwit(Client):
@@ -304,7 +305,7 @@ def add_id_to_database(message_stamp: str):
 
 
 def analyze_image(image_url, instruction):
-    client = OpenAI(openai_api_key=str(os.environ.get("OPENAI_API_KEY")))
+    client = oai(openai_api_key=openai_api_key)
     response = client.chat.completions.create(
         model="gpt-4-vision-preview",
         messages=[
