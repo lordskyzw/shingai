@@ -305,7 +305,7 @@ def add_id_to_database(message_stamp: str):
 
 
 def analyze_image(image_url, instruction):
-    client = oai(openai_api_key=openai_api_key)
+    client = oai(api_key=openai_api_key)
     response = client.chat.completions.create(
         model="gpt-4-vision-preview",
         messages=[
