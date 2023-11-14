@@ -309,29 +309,36 @@ def add_id_to_database(message_stamp: str):
 
 
 
-def analyze_image(image_uri, instruction):
+def analyze_image(image_path, instruction):
     def encode_image(image_path):
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
-    client = oai(api_key=openai_api_key)
-    base64_image = encode_image(image_uri)
-    response = client.chat.completions.create(
+
+    
+    base64_image = encode_image(image_path)
+
+    response = oai.chat.completions.create(
         model="gpt-4-vision-preview",
         messages=[
             {
                 "role": "user",
-                "content": [
-                    {"type": "text", "text": instruction},
-                    {
-                        "type": "image_url",
-                        "url": f"data:image/jpeg;base64,{base64_image}",
-                    },
-                ],
+                "content": {
+                    "type": "text",
+                    "text": instruction
+                },
+            },
+            {
+                "role": "user",
+                "content": {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{base64_image}"
+                    }
+                }
             }
         ],
         max_tokens=300,
     )
-    y = response.choices[0]
-    analysis = y.message.content
+    analysis = response.choices[0].message.content
 
     return analysis

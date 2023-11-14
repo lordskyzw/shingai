@@ -124,7 +124,6 @@ def hook():
                 message_id = data["entry"][0]["changes"][0]["value"]["messages"][0][
                     "id"
                 ]
-
                 logging.info(
                     f"New Message; from sender:{mobile} name:{name} type:{message_type}"
                 )
@@ -200,7 +199,7 @@ def hook():
                     image_uri = messenger.download_media(
                         media_url=image_url, mime_type="image/jpeg"
                     )
-                    response = analyze_image(image_uri=image_uri, instruction=caption)
+                    response = analyze_image(image_path=image_uri, instruction=caption)
                     messenger.reply_to_message(message_id=message_id, recipient_id=recipient, message=response)
                     history.add_user_message(message=caption)
                     history.add_ai_message(
