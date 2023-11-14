@@ -322,5 +322,7 @@ def analyze_image(image_url, instruction):
         ],
         max_tokens=300,
     )
+    y = response.choices[0]
+    analysis = y.message.content
 
-    return response.choices[0].message.content
+    return analysis
