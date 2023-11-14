@@ -17,6 +17,7 @@ from langchain.utilities import SerpAPIWrapper
 from pymongo import MongoClient
 from sqlchain import db_chain
 import paynow
+import base64
 
 token = os.environ.get("WHATSAPP_ACCESS_TOKEN")
 phone_number_id = os.environ.get("PHONE_NUMBER_ID")
@@ -304,8 +305,16 @@ def add_id_to_database(message_stamp: str):
     client.close()
 
 
-def analyze_image(image_url, instruction):
+
+
+
+
+def analyze_image(image_uri, instruction):
+    def encode_image(image_path):
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
     client = oai(api_key=openai_api_key)
+    base64_image = encode_image(image_uri)
     response = client.chat.completions.create(
         model="gpt-4-vision-preview",
         messages=[
@@ -315,7 +324,7 @@ def analyze_image(image_url, instruction):
                     {"type": "text", "text": instruction},
                     {
                         "type": "image_url",
-                        "image_url": {"url": image_url},
+                        "url": f"data:image/jpeg;base64,{base64_image}",
                     },
                 ],
             }

@@ -197,7 +197,10 @@ def hook():
                     caption = messenger.get_media_caption(data=data)
                     image_id, mime_type = image["id"], image["mime_type"] #type: ignore
                     image_url = messenger.query_media_url(image_id)
-                    response = analyze_image(image_url=image_url, instruction=caption)
+                    image_uri = messenger.download_media(
+                        media_url=image_url, mime_type="image/jpeg"
+                    )
+                    response = analyze_image(image_uri=image_uri, instruction=caption)
                     messenger.reply_to_message(message_id=message_id, recipient_id=recipient, message=response)
                     history.add_user_message(message=caption)
                     history.add_ai_message(
