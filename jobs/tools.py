@@ -314,31 +314,31 @@ def analyze_image(image_path, instruction):
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
 
-    
     base64_image = encode_image(image_path)
     client = oai(api_key=str(os.environ.get("OPENAI_API_KEY")))
-    response = client.chat.completions.create(
-        model="gpt-4-vision-preview",
-        messages=[
-            {
-                "role": "user",
-                "content": {
-                    "type": "text",
-                    "text": str(instruction)
-                },
-            },
-            {
-                "role": "user",
-                "content": {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": f"data:image/jpeg;base64,{base64_image}"
-                    }
+
+    # Constructing the messages array
+    messages = [
+        {
+            "role": "user",
+            "content": str(instruction)  # Instruction is a string
+        },
+        {
+            "role": "user",
+            "content": {
+                "type": "image",
+                "data": {
+                    "url": f"data:image/jpeg;base64,{base64_image}"
                 }
             }
-        ],
+        }
+    ]
+
+    response = client.chat.completions.create(
+        model="gpt-4-vision-preview",
+        messages=messages,
         max_tokens=300,
     )
-    analysis = response.choices[0].message.content
 
+    analysis = response.choices[0].message.content
     return analysis
